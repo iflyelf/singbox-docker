@@ -10,9 +10,10 @@ sing-box 客户端镜像与配置。客户端镜像只运行 sing-box 和 nginx�
 - Clash API 监听 `0.0.0.0:9090`
 - sing-box 原生 API 监听 `0.0.0.0:9191`
 - Mixed、SOCKS5、TProxy 分别监听 `7890`、`7891`、`7893`
-- DNS 不由 sing-box 处理，直接使用外部 smartdns
+- DNS 不由 sing-box 处理，直接使用系统 DNS（宿主机 smartdns）
 - 使用远程 SRS 规则集
-- 支持将 Clash 订阅转换为 sing-box 节点配置
+- **支持多个订阅源，每个订阅可指定标签前缀**
+- 协议嗅探启用，TProxy 场景域名规则正常工作
 
 ## 镜像
 
@@ -28,42 +29,11 @@ DockerHub：
 iflyelf/singbox-client:latest
 ```
 
-## 文件结构
+客户端镜像由 GitHub Actions 自动构建和发布，支持 `linux/amd64` 和 `linux/arm64` 双架构。
 
-```text
-singbox-docker/
-├── Dockerfile                    # 原服务端镜像，不做改动
-├── Dockerfile.client             # 客户端专用镜像
-├── docker-entrypoint-client.sh   # 客户端入口，只启动 sing-box 和 nginx
-├── docker-compose.yml            # 原服务端编排，不做改动
-├── docker-compose-client.yml     # 客户端编排
-├── conf/
-│   ├── config.json               # sing-box 运行配置
-│   ├── config_with_sub.json      # 带订阅元数据的配置模板
-│   └── nginx-client/
-│       └── vhost/default.conf    # zashboard，监听 9898
-├── scripts/
-│   ├── config_manager.py
-│   ├── subscription_converter.py
-│   └── auto_update_subscription.sh
-├── update_subscription.sh
-├── reload_config.sh
-└── singbox-ruleset.sh
-```
+## 快速开始
 
-## 构建客户端镜像
-
-```bash
-docker build \
-  -f Dockerfile.client \
-  --build-arg SINGBOX_VERSION=v1.14.2 \
-  -t singbox-client:latest \
-  .
-```
-
-GitHub Actions 工作流 `.github/workflows/docker-publish-client.yml` 会自动获取最新稳定版 sing-box，构建 `linux/amd64`、`linux/arm64` 镜像并发布到 DockerHub 和华为云 SWR。
-
-## 启动客户端
+### 1. 启动客户端
 
 ```bash
 docker compose -f docker-compose-client.yml pull
@@ -73,28 +43,34 @@ docker logs -f singbox-client
 
 客户端编排使用 `host` 网络、TUN 设备和所需内核挂载。原服务端 `docker-compose.yml` 不受影响。
 
-## 更新订阅
+### 2. 更新订阅
 
-订阅地址只通过环境变量传入，不写入仓库：
+#### 单订阅源（兼容模式）
 
 ```bash
 export CLASH_SUBSCRIPTION_URL='你的订阅地址'
 ./update_subscription.sh
 ```
 
-脚本可从任意工作目录执行，它会：
+#### 多订阅源（推荐）
 
-1. 通过华为云 `singbox-client` 镜像运行 `scripts/config_manager.py`
-2. 从 `conf/config_with_sub.json` 生成 `conf/config.json`
-3. 生成失败时恢复备份
-4. 检测到客户端容器后重启该容器，确保新配置完整生效
-
-`config_with_sub.json` 中的订阅元数据如下：
+先编辑 `conf/config_with_sub.json`：
 
 ```json
 {
   "_subscription": {
-    "url": "env:CLASH_SUBSCRIPTION_URL",
+    "sources": [
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_1",
+        "tag_prefix": "xiaonuo",
+        "enabled": true
+      },
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_2",
+        "tag_prefix": "airport2",
+        "enabled": true
+      }
+    ],
     "update_interval": 3600,
     "auto_update": true,
     "user_agent": "clash"
@@ -102,9 +78,38 @@ export CLASH_SUBSCRIPTION_URL='你的订阅地址'
 }
 ```
 
+**参数说明：**
+- `url`: 订阅地址，支持 `env:变量名` 格式
+- `tag_prefix`: 标签前缀，用于区分不同订阅源的节点
+- `enabled`: 是否启用该订阅源
+
+然后设置环境变量并更新：
+
+```bash
+# 设置多个订阅地址
+export CLASH_SUBSCRIPTION_URL_1='https://xiaonuo-订阅地址'
+export CLASH_SUBSCRIPTION_URL_2='https://其他机场订阅地址'
+
+# 更新订阅
+./update_subscription.sh
+```
+
+**节点分组规则：**
+
+- **xiaonuo 订阅**：节点标签 `🎉 xiaonuo🛺节点名`，自动加入 `🎉 xiaonuo` 组
+- **airport2 订阅**：节点标签 `🎉 airport2🛺节点名`，自动加入 `🎉 airport2` 组
+- **全局代理组**：`♻️ 自动选择`、`🔯 故障转移`、`🔮 负载均衡` 等包含所有订阅源的节点
+
+脚本会：
+
+1. 通过华为云 `singbox-client` 镜像运行 `scripts/config_manager.py`
+2. 从 `conf/config_with_sub.json` 生成 `conf/config.json`
+3. 生成失败时恢复备份
+4. 检测到客户端容器后重启该容器，确保新配置完整生效
+
 `_subscription` 是转换工具使用的元数据，不是 sing-box 原生字段，因此不能直接交给 sing-box 运行。运行时始终使用 `conf/config.json`。
 
-## 重新加载配置
+### 3. 重新加载配置
 
 ```bash
 ./reload_config.sh
@@ -144,7 +149,34 @@ zashboard 首次打开后填写：
 | `9191` | sing-box API |
 | `9898` | zashboard |
 
-## 规则集
+## 性能优化
+
+### DNS 配置
+
+**已彻底移除 sing-box DNS 配置！**
+
+- ✅ 规则集下载使用系统 DNS（宿主机 smartdns）
+- ✅ 用户流量直接走系统 DNS
+- ✅ 零 DNS 查询延迟
+
+### 协议嗅探
+
+- ✅ 启用 HTTP/TLS/QUIC 协议嗅探
+- ✅ TProxy 场景自动提取真实域名用于路由匹配
+- ✅ 域名规则正常工作
+
+### 路由优化
+
+- ✅ 本地回环直连前置
+- ✅ IPv6 流量明确拒绝（系统不支持时避免超时）
+- ✅ 规则顺序优化：嗅探 → 本地 → IPv6拒绝 → 广告 → 直连 → 代理
+
+### 规则集
+
+- ✅ **ChinaIp**: 5958 条规则
+- ✅ **ChinaDomain**: 完整域名规则
+- ✅ 百度等国内网站正确命中直连
+- ✅ 所有规则集已编译为 SRS 二进制格式
 
 运行配置使用以下远程 SRS 地址：
 
@@ -191,12 +223,54 @@ docker compose -f docker-compose-client.yml up -d
 # 查看日志
 docker logs -f singbox-client
 
-# 更新订阅并重启加载
+# 单订阅更新
 export CLASH_SUBSCRIPTION_URL='你的订阅地址'
 ./update_subscription.sh
 
+# 多订阅更新
+export CLASH_SUBSCRIPTION_URL_1='xiaonuo订阅地址'
+export CLASH_SUBSCRIPTION_URL_2='其他机场订阅地址'
+./update_subscription.sh
+
+# 重新加载配置
+./reload_config.sh
+
 # 停止
 docker compose -f docker-compose-client.yml down
+```
+
+## 故障排查
+
+### 订阅更新失败
+
+```bash
+# 检查环境变量
+env | grep CLASH_SUBSCRIPTION_URL
+
+# 手动测试订阅地址
+curl -v "你的订阅地址"
+```
+
+### 规则集下载超时
+
+检查系统 DNS 是否正常：
+
+```bash
+# 测试域名解析
+nslookup link.onlysing.com
+
+# 检查 smartdns 状态
+systemctl status smartdns
+```
+
+### 节点未分组
+
+检查 `config_with_sub.json` 中的 `tag_prefix` 是否与代理组名称匹配。
+
+### 查看日志
+
+```bash
+docker logs -f singbox-client
 ```
 
 ## 安全建议
