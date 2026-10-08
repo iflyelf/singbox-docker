@@ -1,8 +1,10 @@
 #!/bin/bash
-# sing-box 订阅更新便捷脚本
+# sing-box 订阅更新脚本
+# 使用 Docker 运行，无需本地安装 Python 和依赖
 
 set -e
 
+# 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_TEMPLATE="${SCRIPT_DIR}/conf/config_with_sub.json"
 CONFIG_OUTPUT="${SCRIPT_DIR}/conf/config.json"
@@ -16,8 +18,9 @@ echo ""
 if [ -z "${CLASH_SUBSCRIPTION_URL}" ]; then
     echo "错误: 未设置 CLASH_SUBSCRIPTION_URL 环境变量"
     echo ""
-    echo "请先设置:"
+    echo "使用方法:"
     echo "  export CLASH_SUBSCRIPTION_URL='你的订阅地址'"
+    echo "  ./update_subscription.sh"
     exit 1
 fi
 
@@ -31,11 +34,15 @@ if [ -f "${CONFIG_OUTPUT}" ]; then
     echo "✓ 已备份当前配置"
 fi
 
-# 更新配置
+# 使用 Docker 运行配置管理器
 echo ""
-echo "正在更新订阅..."
-cd "${SCRIPT_DIR}/scripts"
-python3 config_manager.py "${CONFIG_TEMPLATE}" "${CONFIG_OUTPUT}" once
+echo "正在使用 Docker 更新订阅..."
+docker run --rm \
+  -e CLASH_SUBSCRIPTION_URL="${CLASH_SUBSCRIPTION_URL}" \
+  -v "${SCRIPT_DIR}:/app" \
+  -w /app \
+  swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest \
+  python3 scripts/config_manager.py conf/config_with_sub.json conf/config.json once
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -45,8 +52,11 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "下一步:"
     echo "  1. 检查配置: sing-box check -c ${CONFIG_OUTPUT}"
-    echo "  2. 重启服务: sudo systemctl restart singbox"
-    echo "  3. 或直接运行: sing-box run -c ${CONFIG_OUTPUT}"
+    echo "  2. 重启服务: docker-compose restart"
+    echo "  3. 或: sudo systemctl restart singbox"
+    
+    # 删除备份
+    rm -f "${CONFIG_OUTPUT}.backup"
 else
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
