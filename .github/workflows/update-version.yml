@@ -75,9 +75,10 @@ jobs:
       run: |
         echo "发现新版本: ${CURRENT} => ${LATEST}, 更新 Dockerfile"
         sed -i "s/^ARG SINGBOX_VERSION=.*/ARG SINGBOX_VERSION=${LATEST}/" Dockerfile
+        sed -i "s/^ARG SINGBOX_VERSION=.*/ARG SINGBOX_VERSION=${LATEST}/" Dockerfile.client
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add Dockerfile
+        git add Dockerfile Dockerfile.client
         git commit -m "chore: 更新 sing-box 版本 ${CURRENT} => ${LATEST}"
         git push
 
