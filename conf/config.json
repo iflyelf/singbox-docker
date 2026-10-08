@@ -19,13 +19,6 @@
       "access_control_allow_private_network": true
     }
   },
-  "dns": {
-    "servers": [],
-    "rules": [],
-    "strategy": "prefer_ipv4",
-    "disable_cache": true,
-    "disable_expire": true
-  },
   "inbounds": [
     {
       "type": "mixed",
@@ -1012,11 +1005,34 @@
   "route": {
     "rules": [
       {
+        "protocol": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "action": "sniff"
+      },
+      {
         "ip_cidr": [
           "127.0.0.0/8",
           "::1/128"
         ],
         "outbound": "🎯 全球直连"
+      },
+      {
+        "ip_cidr": [
+          "127.0.0.0/8",
+          "::1/128"
+        ],
+        "outbound": "🎯 全球直连"
+      },
+      {
+        "ip_version": 6,
+        "outbound": "🛑 广告拦截"
+      },
+      {
+        "ip_version": 6,
+        "outbound": "🛑 广告拦截"
       },
       {
         "port": [
