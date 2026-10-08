@@ -1,0 +1,80 @@
+#############################################################################
+# singbox-client + nginx + zashboard 客户端镜像
+#
+# - nginx: iflyelf/nginx:latest
+# - builder: iflyelf/ubuntu:latest
+# - runtime: iflyelf/ubuntu:lite
+# - 不复制服务端 supervisor、vmess/trojan 配置或服务端入口脚本
+#############################################################################
+
+ARG BUILD_NGINX_IMAGE=iflyelf/nginx:latest
+
+FROM ${BUILD_NGINX_IMAGE} AS nginx
+
+FROM iflyelf/ubuntu:latest AS download
+
+ARG TARGETARCH
+ARG SINGBOX_VERSION=v1.14.2
+ARG ZASHBOARD_URL=https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
+
+RUN set -eux; \
+    case "${TARGETARCH}" in \
+      amd64) SINGBOX_ARCH=amd64 ;; \
+      arm64) SINGBOX_ARCH=arm64 ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac; \
+    VERSION_NUM="${SINGBOX_VERSION#v}"; \
+    SINGBOX_URL="https://github.com/SagerNet/sing-box/releases/download/${SINGBOX_VERSION}/sing-box-${VERSION_NUM}-linux-${SINGBOX_ARCH}.tar.gz"; \
+    wget --no-check-certificate --retry-connrefused --waitretry=5 --tries=5 \
+      -O /tmp/sing-box.tar.gz "${SINGBOX_URL}"; \
+    tar -xzf /tmp/sing-box.tar.gz -C /tmp; \
+    install -D -m 0755 "/tmp/sing-box-${VERSION_NUM}-linux-${SINGBOX_ARCH}/sing-box" /tmp/sing-box; \
+    wget --no-check-certificate --retry-connrefused --waitretry=5 --tries=5 \
+      -O /tmp/zashboard.zip "${ZASHBOARD_URL}"; \
+    unzip -q /tmp/zashboard.zip -d /tmp; \
+    test -f /tmp/dist/index.html
+
+FROM iflyelf/ubuntu:lite
+
+LABEL org.opencontainers.image.title="singbox-client" \
+      org.opencontainers.image.description="sing-box client with nginx and zashboard" \
+      org.opencontainers.image.vendor="iflyelf"
+
+ARG TZ=Asia/Shanghai
+ENV TZ=${TZ} \
+    PATH=/data/nginx/sbin:/usr/local/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/lib
+
+ARG RUNTIME_DEPS="ca-certificates iptables python3 python3-requests python3-yaml libpcre2-8-0 zlib1g libgd3 libxml2-16 libaio1t64"
+
+RUN set -eux; \
+    DEBIAN_FRONTEND=noninteractive apt-get update -qqy; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends ${RUNTIME_DEPS}; \
+    ln -sf "/usr/share/zoneinfo/${TZ}" /etc/localtime; \
+    echo "${TZ}" > /etc/timezone; \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/*
+
+COPY --from=download /tmp/sing-box /usr/bin/sing-box
+COPY --from=download /tmp/dist /www
+COPY --from=nginx /usr/local/lib /usr/local/lib
+COPY --from=nginx /usr/local/share/lua /usr/local/share/lua
+COPY --from=nginx /data/nginx /data/nginx
+COPY conf/nginx-client/vhost/default.conf /data/nginx/conf/vhost/default.conf
+COPY docker-entrypoint-client.sh /usr/bin/docker-entrypoint-client.sh
+
+RUN set -eux; \
+    ldconfig; \
+    mkdir -p /data/nginx/logs /data/nginx/conf/vhost; \
+    ln -sf /dev/stdout /data/nginx/logs/access.log; \
+    ln -sf /dev/stderr /data/nginx/logs/error.log; \
+    ln -sf /data/nginx/sbin/nginx /usr/sbin/nginx; \
+    chmod 0755 /usr/bin/sing-box /usr/bin/docker-entrypoint-client.sh; \
+    sing-box version; \
+    nginx -t -p /data/nginx -c /data/nginx/conf/nginx.conf
+
+WORKDIR /etc/sing-box
+
+EXPOSE 7890 7891 7893 9090 9191 9898
+
+STOPSIGNAL SIGQUIT
+ENTRYPOINT ["/usr/bin/docker-entrypoint-client.sh"]

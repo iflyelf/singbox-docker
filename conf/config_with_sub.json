@@ -18,9 +18,12 @@
     },
     "clash_api": {
       "external_controller": "0.0.0.0:9090",
-      "external_ui": "ui",
       "secret": "@admin123",
-      "default_mode": "rule"
+      "default_mode": "rule",
+      "access_control_allow_origin": [
+        "*"
+      ],
+      "access_control_allow_private_network": true
     }
   },
   "dns": {
@@ -1423,10 +1426,7 @@
         "*"
       ],
       "access_control_allow_private_network": true,
-      "dashboard": {
-        "enabled": true,
-        "path": "dashboard"
-      }
+      "dashboard": false
     }
   ]
 }

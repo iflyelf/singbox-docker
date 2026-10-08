@@ -1,383 +1,217 @@
-# sing-box Docker 配置和订阅管理
+# singbox-docker
 
-Clash 配置转换为 sing-box 格式，支持远程规则集、订阅管理和 Clash API。
+sing-box 客户端镜像与配置。客户端镜像只运行 sing-box 和 nginx，不包含服务端的 `supervisord`、VMess 入站或 Trojan 入站配置。
 
-## ✨ 特性
+## 功能
 
-- ✅ **完全对齐 Clash**：所有功能与 Clash 保持一致
-- ✅ **DNS 禁用**：使用 smartdns 处理 DNS 解析
-- ✅ **远程规则集**：从 GitHub 自动拉取最新规则集（SRS 格式）
-- ✅ **订阅管理**：支持 Clash 订阅转换和自动更新
-- ✅ **Clash API**：兼容 Clash API，支持 Web 面板管理
-- ✅ **地区分组**：自动识别节点地区（13个地区）
+- 使用最新稳定版 sing-box，构建时通过 GitHub API 获取版本
+- 使用 `iflyelf/nginx:latest` 提供 nginx 运行产物
+- 内置 zashboard，由 nginx 在 `9898` 端口提供
+- Clash API 监听 `0.0.0.0:9090`
+- sing-box 原生 API 监听 `0.0.0.0:9191`
+- Mixed、SOCKS5、TProxy 分别监听 `7890`、`7891`、`7893`
+- DNS 不由 sing-box 处理，直接使用外部 smartdns
+- 使用远程 SRS 规则集
+- 支持将 Clash 订阅转换为 sing-box 节点配置
 
-## 📁 项目结构
+## 镜像
 
+国内推荐使用华为云 SWR：
+
+```text
+swr.cn-east-3.myhuaweicloud.com/iflyelf/singbox-client:latest
 ```
-sing-box-docker/
+
+DockerHub：
+
+```text
+iflyelf/singbox-client:latest
+```
+
+## 文件结构
+
+```text
+singbox-docker/
+├── Dockerfile                    # 原服务端镜像，不做改动
+├── Dockerfile.client             # 客户端专用镜像
+├── docker-entrypoint-client.sh   # 客户端入口，只启动 sing-box 和 nginx
+├── docker-compose.yml            # 原服务端编排，不做改动
+├── docker-compose-client.yml     # 客户端编排
 ├── conf/
-│   ├── config.json               # 运行时配置
-│   └── config_with_sub.json      # 配置模板（含订阅）
+│   ├── config.json               # sing-box 运行配置
+│   ├── config_with_sub.json      # 带订阅元数据的配置模板
+│   └── nginx-client/
+│       └── vhost/default.conf    # zashboard，监听 9898
 ├── scripts/
-│   ├── subscription_converter.py # 订阅转换工具
-│   ├── config_manager.py         # 配置管理器
-│   └── auto_update_subscription.sh # 自动更新脚本
-├── update_subscription.sh        # 便捷更新脚本
-├── docker-compose.yml            # Docker Compose 配置
-└── README.md                     # 本文档
+│   ├── config_manager.py
+│   ├── subscription_converter.py
+│   └── auto_update_subscription.sh
+├── update_subscription.sh
+├── reload_config.sh
+└── singbox-ruleset.sh
 ```
 
-## 🚀 快速开始
-
-### 1. 安装 sing-box
+## 构建客户端镜像
 
 ```bash
-# 方式 1: 官方脚本（推荐）
-bash <(curl -fsSL https://sing-box.app/deb-install.sh)
-
-# 方式 2: 手动下载最新版本
-LATEST_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4)
-VERSION_NUM=${LATEST_VERSION#v}
-wget "https://github.com/SagerNet/sing-box/releases/download/${LATEST_VERSION}/sing-box-${VERSION_NUM}-linux-amd64.tar.gz"
-tar -xzf sing-box-${VERSION_NUM}-linux-amd64.tar.gz
-sudo cp sing-box-${VERSION_NUM}-linux-amd64/sing-box /usr/local/bin/
-sudo chmod +x /usr/local/bin/sing-box
-sing-box version
+docker build \
+  -f Dockerfile.client \
+  --build-arg SINGBOX_VERSION=v1.14.2 \
+  -t singbox-client:latest \
+  .
 ```
 
-### 2. 克隆配置
+GitHub Actions 工作流 `.github/workflows/docker-publish-client.yml` 会自动获取最新稳定版 sing-box，构建 `linux/amd64`、`linux/arm64` 镜像并发布到 DockerHub 和华为云 SWR。
+
+## 启动客户端
 
 ```bash
-git clone https://github.com/iflyelf/sing-box-docker.git
-cd sing-box-docker
+docker compose -f docker-compose-client.yml pull
+docker compose -f docker-compose-client.yml up -d
+docker logs -f singbox-client
 ```
 
-### 3. 转换订阅
+客户端编排使用 `host` 网络、TUN 设备和所需内核挂载。原服务端 `docker-compose.yml` 不受影响。
+
+## 更新订阅
+
+订阅地址只通过环境变量传入，不写入仓库：
 
 ```bash
-# 设置订阅地址
 export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-
-# 运行更新脚本
 ./update_subscription.sh
 ```
 
-### 4. 启动服务
+脚本可从任意工作目录执行，它会：
 
-```bash
-# 直接运行
-sing-box run -c conf/config.json
+1. 通过华为云 `singbox-client` 镜像运行 `scripts/config_manager.py`
+2. 从 `conf/config_with_sub.json` 生成 `conf/config.json`
+3. 生成失败时恢复备份
+4. 检测到客户端容器后重启该容器，确保新配置完整生效
 
-# 或使用 systemd
-sudo systemctl start singbox
-```
-
-## 🔧 配置说明
-
-### 端口配置
-
-| 服务   | 端口 | 协议          |
-| ------ | ---- | ------------- |
-| Mixed  | 7890 | HTTP + SOCKS5 |
-| SOCKS5 | 7891 | SOCKS5        |
-| TProxy | 7893 | 透明代理      |
-| API    | 9090 | Clash API     |
-
-### DNS 配置
-
-DNS 已完全禁用，sing-box 将使用系统 DNS（smartdns）。
-
-### 规则集来源
-
-所有规则集从 [gwf](https://github.com/iflyelf/gwf) 仓库远程加载（SRS 二进制格式）：
-
-```
-https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/*.srs
-```
-
-规则集包括：
-- **拦截规则**（6个）：XiaoNuoReject, BanAD, BanProgramAD 等
-- **直连规则**（14个）：XiaoNuoDirect, ChinaIp, ChinaDomain 等
-- **代理规则**（14个）：XiaoNuoProxy, ProxyGFWlist, Telegram 等
-
-### 代理组
-
-配置包含 53 个代理组，与 Clash 完全一致：
-
-- **功能分组**：节点选择、自动选择、故障转移、负载均衡
-- **服务分组**：Telegram、AI、YouTube、Netflix 等
-- **地区分组**：台湾、香港、日本、新加坡、美国等（自动/手动）
-
-## 🐳 Docker 部署
-
-### 使用 Docker Compose（推荐）
-
-```yaml
-version: '3'
-
-services:
-  sing-box:
-    # 使用华为云镜像（国内加速）
-    image: swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest
-    container_name: sing-box
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - ./conf/config.json:/etc/sing-box/config.json:ro
-    command: run -c /etc/sing-box/config.json
-```
-
-启动服务：
-
-```bash
-docker-compose up -d
-```
-
-### 使用 Docker 命令
-
-```bash
-# 使用华为云镜像（推荐）
-docker run -d \
-  --name sing-box \
-  --restart unless-stopped \
-  --network host \
-  -v $(pwd)/conf/config.json:/etc/sing-box/config.json:ro \
-  swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest \
-  run -c /etc/sing-box/config.json
-```
-
-## 📡 订阅管理
-
-### 订阅 URL 配置
-
-在 `conf/config_with_sub.json` 中配置订阅地址：
+`config_with_sub.json` 中的订阅元数据如下：
 
 ```json
 {
   "_subscription": {
     "url": "env:CLASH_SUBSCRIPTION_URL",
     "update_interval": 3600,
-    "auto_update": true
-  },
-  ...
-}
-```
-
-- `url`: 订阅地址，支持 `env:变量名` 或直接写 URL（不推荐）
-- `update_interval`: 更新间隔（秒）
-- `auto_update`: 是否自动更新
-
-### 更新订阅
-
-#### 方式 1：使用便捷脚本（推荐）
-
-```bash
-export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-./update_subscription.sh
-```
-
-#### 方式 2：使用配置管理器
-
-```bash
-export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-cd scripts
-python3 config_manager.py ../conf/config_with_sub.json ../conf/config.json once
-```
-
-#### 方式 3：使用订阅转换工具
-
-```bash
-export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-cd scripts
-python3 subscription_converter.py ../conf/config.json output.json
-```
-
-### 自动更新
-
-#### 守护进程模式
-
-```bash
-cd scripts
-./auto_update_subscription.sh daemon
-```
-
-#### Crontab 定时任务
-
-```bash
-crontab -e
-
-# 添加：每小时更新一次
-0 * * * * export CLASH_SUBSCRIPTION_URL='你的订阅' && cd /path/to/sing-box-docker && ./update_subscription.sh >> /var/log/singbox-update.log 2>&1
-```
-
-## 🌐 Clash API
-
-### API 配置
-
-```json
-{
-  "experimental": {
-    "clash_api": {
-      "external_controller": ":9090",
-      "external_ui": "ui",
-      "secret": "@admin123",
-      "default_mode": "rule"
-    }
+    "auto_update": true,
+    "user_agent": "clash"
   }
 }
 ```
 
-### 访问信息
+`_subscription` 是转换工具使用的元数据，不是 sing-box 原生字段，因此不能直接交给 sing-box 运行。运行时始终使用 `conf/config.json`。
 
-- **API 地址**: `http://127.0.0.1:9090`
-- **Secret**: `@admin123`
-- **面板地址**: `http://127.0.0.1:9090/ui`
-
-### API 使用示例
+## 重新加载配置
 
 ```bash
-# 获取配置信息
-curl -H "Authorization: Bearer @admin123" http://127.0.0.1:9090/configs
-
-# 获取代理信息
-curl -H "Authorization: Bearer @admin123" http://127.0.0.1:9090/proxies
-
-# 切换代理
-curl -X PUT \
-  -H "Authorization: Bearer @admin123" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"节点名称"}' \
-  http://127.0.0.1:9090/proxies/🚀%20节点选择
-
-# 测试延迟
-curl -H "Authorization: Bearer @admin123" \
-  "http://127.0.0.1:9090/proxies/节点名称/delay?timeout=5000&url=https://www.gstatic.com/generate_204"
+./reload_config.sh
 ```
 
-### Web 面板
+脚本会重启 `singbox-client` 容器。配置文件已挂载到容器内，重启后会完整加载新配置。
 
-推荐使用以下面板：
+## 管理界面与 API
 
-1. **Yacd**
-   ```bash
-   git clone https://github.com/haishanh/yacd.git ui
-   ```
+| 服务 | 地址 | 用途 |
+|------|------|------|
+| zashboard | `http://<服务器IP>:9898` | 通过 Clash API 管理节点 |
+| Clash API | `http://<服务器IP>:9090` | 节点切换、延迟测试、连接管理 |
+| sing-box API | `http://<服务器IP>:9191` | 原生 gRPC/gRPC-Web API |
 
-2. **Clash Dashboard**
-   ```bash
-   git clone https://github.com/Dreamacro/clash-dashboard.git ui
-   ```
+默认 API 密钥：
 
-3. **Yacd-meta**
-   ```bash
-   git clone https://github.com/MetaCubeX/Yacd-meta.git ui
-   ```
-
-访问：`http://127.0.0.1:9090/ui`
-
-## 🔄 节点地区自动分组
-
-订阅转换工具会自动识别节点地区并分配到对应组：
-
-| 地区组 | 匹配关键词 |
-|--------|-----------|
-| 🇹🇼 台湾 | 台, tw, taiwan, TW, Taiwan |
-| 🇭🇰 香港 | 港, hk, hongkong, HK, HongKong |
-| 🇯🇵 日本 | 日, jp, japan, JP, Japan |
-| 🇸🇬 新加坡 | 新, sg, singapore, SG, Singapore |
-| 🇰🇷 韩国 | 韩, 🇰🇷, KR, Korea |
-| 🇷🇺 俄罗斯 | 🇷🇺, RU, 俄罗斯, Russia |
-| 🇨🇦 加拿大 | 🇨🇦, CA, 加拿大, Canada |
-| 🇺🇸 美国 | 美, us, unitedstates, US, USA |
-| 🇬🇧 英国 | 🇬🇧, GB, 英国, UK, Britain |
-| 🇫🇷 法国 | 🇫🇷, FR, 法国, France |
-| 🇩🇪 德国 | 🇩🇪, DE, 德国, Germany |
-| 🇧🇷 巴西 | 🇧🇷, BR, 巴西, Brazil |
-| 🇳🇱 荷兰 | 🇳🇱, NL, 荷兰, Netherlands |
-
-不匹配任何地区的节点归入"🚞 其它地区"。
-
-## 🛠️ systemd 服务配置
-
-创建 `/etc/systemd/system/singbox.service`：
-
-```ini
-[Unit]
-Description=sing-box Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/local/bin/sing-box run -c /path/to/config.json
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
+```text
+@admin123
 ```
 
-启用服务：
+zashboard 首次打开后填写：
+
+- API 地址：`http://<服务器IP>:9090`
+- Secret：`@admin123`
+
+客户端镜像构建时已经打包 zashboard，不会在容器启动时从 GitHub 下载。
+
+## 代理端口
+
+| 端口 | 类型 |
+|------|------|
+| `7890` | Mixed（HTTP + SOCKS5） |
+| `7891` | SOCKS5 |
+| `7893` | TProxy |
+| `9090` | Clash API |
+| `9191` | sing-box API |
+| `9898` | zashboard |
+
+## 规则集
+
+运行配置使用以下远程 SRS 地址：
+
+```text
+https://link.onlysing.com/get/singbox/ruleset/<规则集名称>.srs
+```
+
+如需将规则集下载到本地：
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable singbox
-sudo systemctl start singbox
-sudo systemctl status singbox
+./singbox-ruleset.sh
 ```
 
-## 🔍 常用命令
+默认目录：
+
+```text
+/data/www/singbox/ruleset
+```
+
+## 配置验证
+
+本机已安装 sing-box 时：
 
 ```bash
-# 检查配置
 sing-box check -c conf/config.json
+```
 
-# 运行服务
-sing-box run -c conf/config.json
+未安装时可使用客户端镜像：
 
-# 格式化配置
-sing-box format -c conf/config.json -w
+```bash
+docker run --rm \
+  -v "$PWD/conf/config.json:/etc/sing-box/config.json:ro" \
+  --entrypoint /usr/bin/sing-box \
+  swr.cn-east-3.myhuaweicloud.com/iflyelf/singbox-client:latest \
+  check -c /etc/sing-box/config.json
+```
 
-# 查看版本
-sing-box version
+## 常用命令
 
-# 更新订阅
-./update_subscription.sh
+```bash
+# 启动
+docker compose -f docker-compose-client.yml up -d
 
 # 查看日志
-journalctl -u singbox -f
+docker logs -f singbox-client
+
+# 更新订阅并重启加载
+export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+./update_subscription.sh
+
+# 停止
+docker compose -f docker-compose-client.yml down
 ```
 
-## 🐛 故障排查
+## 安全建议
 
-### 订阅更新失败
+- 修改默认 API 密钥
+- `9090`、`9191` 监听 `0.0.0.0`，应通过防火墙限制为可信局域网
+- 不要把真实订阅 URL 或生成后含真实节点的 `config.json` 提交到公共仓库
 
-1. 检查订阅地址是否正确
-2. 检查网络连接
-3. 查看错误日志
+## 参考
 
-### 配置验证失败
+- [sing-box 配置文档](https://sing-box.sagernet.org/zh/configuration/)
+- [sing-box API](https://sing-box.sagernet.org/zh/configuration/service/api/)
+- [zashboard](https://github.com/Zephyruso/zashboard)
+- [规则集仓库](https://github.com/iflyelf/gwf)
 
-1. 运行 `sing-box check -c conf/config.json`
-2. 检查节点格式是否正确
-3. 确保使用运行时配置（非模板）
-
-### API 无法访问
-
-1. 检查服务是否运行
-2. 检查端口是否被占用：`netstat -tlnp | grep 9090`
-3. 检查防火墙设置
-
-### 面板无法打开
-
-1. 确认 `ui` 目录存在且包含面板文件
-2. 检查 `external_ui` 配置路径
-3. 确认 API 服务正常
-
-## 📦 相关项目
-
-- [gwf](https://github.com/iflyelf/gwf) - Clash 规则集转换为 sing-box 格式
-
-## 📄 许可证
+## 许可证
 
 MIT License

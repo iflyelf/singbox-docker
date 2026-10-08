@@ -11,9 +11,12 @@
     },
     "clash_api": {
       "external_controller": "0.0.0.0:9090",
-      "external_ui": "ui",
       "secret": "@admin123",
-      "default_mode": "rule"
+      "default_mode": "rule",
+      "access_control_allow_origin": [
+        "*"
+      ],
+      "access_control_allow_private_network": true
     }
   },
   "dns": {
@@ -709,10 +712,7 @@
       "type": "urltest",
       "tag": "🎉 xiaonuo🛺",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -852,10 +852,7 @@
       "type": "selector",
       "tag": "🎉 xiaonuo",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ]
     },
     {
@@ -960,20 +957,14 @@
       "type": "selector",
       "tag": "🌐 全部节点",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ]
     },
     {
       "type": "urltest",
       "tag": "♻️ 自动选择",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -983,10 +974,7 @@
       "type": "urltest",
       "tag": "🔯 故障转移",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -996,10 +984,7 @@
       "type": "urltest",
       "tag": "🔮 负载均衡-轮询",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1009,10 +994,7 @@
       "type": "urltest",
       "tag": "🔮 负载均衡-散列",
       "outbounds": [
-        "papa-vmess-1",
-        "papa-trojan-1",
-        "sg-vmess-1",
-        "sg-trojan-1"
+        "🎯 全球直连"
       ],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "30s",
@@ -1437,10 +1419,7 @@
         "*"
       ],
       "access_control_allow_private_network": true,
-      "dashboard": {
-        "enabled": true,
-        "path": "dashboard"
-      }
+      "dashboard": false
     }
   ]
 }

@@ -38,11 +38,13 @@ fi
 echo ""
 echo "正在使用 Docker 更新订阅..."
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
   -e CLASH_SUBSCRIPTION_URL="${CLASH_SUBSCRIPTION_URL}" \
   -v "${SCRIPT_DIR}:/app" \
   -w /app \
-  python:3.11-slim \
-  sh -c "pip install -q pyyaml requests && python3 scripts/config_manager.py conf/config_with_sub.json conf/config.json once"
+  --entrypoint python3 \
+  swr.cn-east-3.myhuaweicloud.com/iflyelf/singbox-client:latest \
+  scripts/config_manager.py conf/config_with_sub.json conf/config.json once
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -54,7 +56,7 @@ if [ $? -eq 0 ]; then
     rm -f "${CONFIG_OUTPUT}.backup"
     
     echo ""
-    echo "尝试自动重载配置..."
+    echo "尝试重新加载配置..."
     
     # 检查是否有运行的容器
     if docker ps --format '{{.Names}}' | grep -q "singbox-client"; then
@@ -63,7 +65,7 @@ if [ $? -eq 0 ]; then
             "${SCRIPT_DIR}/reload_config.sh"
         else
             echo "⚠️ 重载脚本不存在或无执行权限"
-            echo "手动重载: docker-compose -f docker-compose-client.yml restart"
+            echo "手动重载: docker compose -f docker-compose-client.yml restart"
         fi
     elif systemctl is-active --quiet singbox 2>/dev/null; then
         echo "✓ 检测到 systemd 服务运行中"
@@ -73,7 +75,7 @@ if [ $? -eq 0 ]; then
         echo ""
         echo "下一步:"
         echo "  1. 检查配置: sing-box check -c ${CONFIG_OUTPUT}"
-        echo "  2. Docker: docker-compose -f docker-compose-client.yml restart"
+        echo "  2. Docker: docker compose -f docker-compose-client.yml restart"
         echo "  3. systemd: sudo systemctl restart singbox"
     fi
 else
