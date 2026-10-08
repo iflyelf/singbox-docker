@@ -1189,238 +1189,238 @@
         "tag": "XiaoNuoReject",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/XiaoNuoReject.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoReject.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BanAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BanAD.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanAD.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BanProgramAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BanProgramAD.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanProgramAD.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BanEasyList",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BanEasyList.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyList.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BanEasyListChina",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BanEasyListChina.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyListChina.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BanEasyPrivacy",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BanEasyPrivacy.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyPrivacy.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "XiaoNuoDirect",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/XiaoNuoDirect.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoDirect.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "LocalAreaNetwork",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/LocalAreaNetwork.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/LocalAreaNetwork.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ChinaIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ChinaIp.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaIp.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ChinaDomain",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ChinaDomain.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaDomain.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ChinaCompanyIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ChinaCompanyIp.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaCompanyIp.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Download",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Download.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Download.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "UnBan",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/UnBan.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/UnBan.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ChinaMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ChinaMedia.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaMedia.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Bilibili",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Bilibili.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bilibili.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "OneDrive",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/OneDrive.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OneDrive.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Microsoft",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Microsoft.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Microsoft.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Apple",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Apple.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Apple.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Epic",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Epic.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Epic.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Sony",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Sony.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Sony.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Steam",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Steam.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Steam.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "NetEaseMusic",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/NetEaseMusic.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/NetEaseMusic.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Dns",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Dns.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Dns.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Telegram",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Telegram.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "AI",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/AI.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/AI.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "OpenAi",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/OpenAi.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OpenAi.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "YouTube",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/YouTube.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/YouTube.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Netflix",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Netflix.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Netflix.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "Bahamut",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Bahamut.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bahamut.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ProxyMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ProxyMedia.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyMedia.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "BilibiliHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/BilibiliHMT.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BilibiliHMT.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "IqiyiHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/IqiyiHMT.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/IqiyiHMT.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "ProxyGFWlist",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/ProxyGFWlist.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyGFWlist.srs",
         "download_detour": "🎯 全球直连"
       },
       {
         "tag": "XiaoNuoProxy",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/XiaoNuoProxy.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoProxy.srs",
         "download_detour": "🎯 全球直连"
       }
     ],
