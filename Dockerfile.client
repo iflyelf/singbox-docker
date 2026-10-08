@@ -64,7 +64,11 @@ COPY docker-entrypoint-client.sh /usr/bin/docker-entrypoint-client.sh
 
 RUN set -eux; \
     ldconfig; \
+    addgroup --system --quiet nginx; \
+    adduser --quiet --system --disabled-login --ingroup nginx --home /data/nginx --no-create-home nginx; \
     mkdir -p /data/nginx/logs /data/nginx/conf/vhost; \
+    chown -R nginx:nginx /www; \
+    chmod -R 0755 /www; \
     ln -sf /dev/stdout /data/nginx/logs/access.log; \
     ln -sf /dev/stderr /data/nginx/logs/error.log; \
     ln -sf /data/nginx/sbin/nginx /usr/sbin/nginx; \
