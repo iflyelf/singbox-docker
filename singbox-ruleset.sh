@@ -9,9 +9,9 @@ set -euo pipefail
 
 # ============ 公共变量 ============
 PROXY_URL="https://gh-proxy.com"
-REPO_BASE="https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set"
+REPO_BASE="https://link.onlysing.com/get/singbox/ruleset"
 SINGBOX_RULESET="/data/www/singbox/ruleset"
-BASE_URL="${PROXY_URL}/${REPO_BASE}"
+BASE_URL="${REPO_BASE}"
 
 # ============ 规则映射 ============
 # 格式："规则集名称"（自动添加 .srs 后缀）

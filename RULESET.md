@@ -135,7 +135,7 @@ PROXY_URL="https://ghproxy.com"
         "tag": "Telegram",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set/Telegram.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs"
       }
     ]
   }
