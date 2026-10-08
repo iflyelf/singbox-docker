@@ -1,7 +1,18 @@
 {
   "_subscription": {
-    "_comment": "订阅配置 - 类似 Clash 的 proxy-providers",
-    "url": "env:CLASH_SUBSCRIPTION_URL",
+    "_comment": "订阅配置 - 支持多个订阅源",
+    "sources": [
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_1",
+        "tag_prefix": "xiaonuo",
+        "enabled": true
+      },
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_2",
+        "tag_prefix": "airport2",
+        "enabled": false
+      }
+    ],
     "update_interval": 3600,
     "auto_update": true,
     "user_agent": "clash"
@@ -1440,14 +1451,5 @@
       "access_control_allow_private_network": true,
       "dashboard": false
     }
-  ],
-  "dns": {
-    "servers": [
-      {
-        "type": "local",
-        "tag": "local-dns"
-      }
-    ],
-    "strategy": "ipv4_only"
-  }
+  ]
 }

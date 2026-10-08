@@ -1437,14 +1437,5 @@
       "access_control_allow_private_network": true,
       "dashboard": false
     }
-  ],
-  "dns": {
-    "servers": [
-      {
-        "type": "local",
-        "tag": "local-dns"
-      }
-    ],
-    "strategy": "ipv4_only"
-  }
+  ]
 }
