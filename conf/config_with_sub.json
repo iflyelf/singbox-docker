@@ -1412,5 +1412,23 @@
     ],
     "final": "🎯 全球直连",
     "auto_detect_interface": true
-  }
+  },
+  "services": [
+    {
+      "type": "api",
+      "listen": "127.0.0.1",
+      "listen_port": 8080,
+      "secret": "@admin123",
+      "access_control_allow_origin": [
+        "*"
+      ],
+      "access_control_allow_private_network": true,
+      "dashboard": {
+        "enabled": true,
+        "path": "dashboard",
+        "download_url": "https://github.com/SagerNet/sing-box-dashboard/archive/refs/heads/gh-pages.zip",
+        "update_interval": "1d"
+      }
+    }
+  ]
 }
