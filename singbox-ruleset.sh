@@ -10,7 +10,7 @@ set -euo pipefail
 # ============ 公共变量 ============
 PROXY_URL="https://gh-proxy.com"
 REPO_BASE="https://raw.githubusercontent.com/iflyelf/gwf/main/singbox/rule-set"
-SINGBOX_RULESET="/data/www/singbox/rule-set"
+SINGBOX_RULESET="/data/www/singbox/ruleset"
 BASE_URL="${PROXY_URL}/${REPO_BASE}"
 
 # ============ 规则映射 ============

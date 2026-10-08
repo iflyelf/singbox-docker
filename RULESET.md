@@ -88,7 +88,7 @@ PROXY_URL="https://ghproxy.com"
 ## 输出示例
 
 ```
-🚀 开始更新 sing-box RuleSet -> /data/www/singbox/rule-set
+🚀 开始更新 sing-box RuleSet -> /data/www/singbox/ruleset
 ✅ AI.srs
 ✅ Apple.srs
 ✅ Bahamut.srs
@@ -99,7 +99,7 @@ PROXY_URL="https://ghproxy.com"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ 成功: 34 个
 ❌ 失败: 0 个
-📁 保存位置: /data/www/singbox/rule-set
+📁 保存位置: /data/www/singbox/ruleset
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎉 所有规则集下载完成！
 ```
@@ -118,7 +118,7 @@ PROXY_URL="https://ghproxy.com"
         "tag": "Telegram",
         "type": "local",
         "format": "binary",
-        "path": "/data/www/singbox/rule-set/Telegram.srs"
+        "path": "/data/www/singbox/ruleset/Telegram.srs"
       }
     ]
   }
@@ -199,7 +199,7 @@ sudo systemctl enable --now singbox-ruleset.timer
 
 ```bash
 # 确保有写入权限
-sudo mkdir -p /data/www/singbox/rule-set
+sudo mkdir -p /data/www/singbox/ruleset
 sudo chown -R $USER:$USER /data/www/singbox
 ```
 
@@ -207,10 +207,10 @@ sudo chown -R $USER:$USER /data/www/singbox
 
 ```bash
 # 检查文件大小
-ls -lh /data/www/singbox/rule-set/
+ls -lh /data/www/singbox/ruleset/
 
 # 验证 SRS 文件
-file /data/www/singbox/rule-set/*.srs
+file /data/www/singbox/ruleset/*.srs
 ```
 
 ## 与 Clash 规则集对比
