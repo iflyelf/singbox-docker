@@ -11,6 +11,21 @@
         "url": "env:CLASH_SUBSCRIPTION_URL_2",
         "tag_prefix": "airport2",
         "enabled": false
+      },
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_3",
+        "tag_prefix": "airport3",
+        "enabled": false
+      },
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_4",
+        "tag_prefix": "airport4",
+        "enabled": false
+      },
+      {
+        "url": "env:CLASH_SUBSCRIPTION_URL_5",
+        "tag_prefix": "airport5",
+        "enabled": false
       }
     ],
     "update_interval": 3600,
