@@ -63,6 +63,17 @@ class ConfigManager:
             
             self.update_interval = sub_config.get('update_interval', 3600)
         
+        # 备用：如果没有配置任何订阅源，检查环境变量 CLASH_SUBSCRIPTION_URL
+        if not self.subscription_sources:
+            fallback_url = os.environ.get('CLASH_SUBSCRIPTION_URL', '')
+            if fallback_url:
+                print("提示: 使用环境变量 CLASH_SUBSCRIPTION_URL（兼容模式）")
+                self.subscription_sources.append({
+                    'url': fallback_url,
+                    'tag_prefix': '',
+                    'user_agent': 'clash'
+                })
+        
         return self.config
     
     def fetch_subscription(self, url: str, user_agent: str) -> Optional[dict]:
