@@ -333,14 +333,13 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
     {
       "type": "api",
       "listen": "127.0.0.1",
-      "listen_port": 8080,
+      "listen_port": 9191,
       "secret": "@admin123",
       "access_control_allow_origin": ["*"],
       "access_control_allow_private_network": true,
       "dashboard": {
         "enabled": true,
         "path": "dashboard",
-        "download_url": "https://github.com/SagerNet/sing-box-dashboard/archive/refs/heads/gh-pages.zip",
         "update_interval": "1d"
       }
     }
@@ -350,8 +349,8 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
 
 ### 访问信息
 
-- **API 地址**: `http://127.0.0.1:8080`
-- **Dashboard**: `http://127.0.0.1:8080/dashboard/`
+- **API 地址**: `http://127.0.0.1:9191`
+- **Dashboard**: `http://127.0.0.1:9191/dashboard/`
 - **Secret**: `@admin123`
 
 ### API 端点
@@ -365,13 +364,11 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
 
 ### Dashboard
 
-首次访问时，sing-box 会自动从 GitHub 下载仪表板文件。
 
-仪表板会自动保存到 `dashboard/` 目录，并每天自动更新。
 
 ### 与 Clash API 的区别
 
-| 功能 | Clash API (9090) | sing-box API (8080) |
+| 功能 | Clash API (9090) | sing-box API (9191) |
 |------|------------------|---------------------|
 | 协议 | Clash 兼容 | sing-box 原生 |
 | 面板 | 第三方面板 | 官方仪表板 |
@@ -380,5 +377,5 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
 
 建议：
 - 使用 **Clash API (9090)** 进行节点切换和管理
-- 使用 **sing-box API (8080)** 查看流量统计和连接信息
+- 使用 **sing-box API (9191)** 查看流量统计和连接信息
 
