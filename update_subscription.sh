@@ -49,14 +49,33 @@ if [ $? -eq 0 ]; then
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "✓ 订阅更新成功"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "下一步:"
-    echo "  1. 检查配置: sing-box check -c ${CONFIG_OUTPUT}"
-    echo "  2. 重启服务: docker-compose restart"
-    echo "  3. 或: sudo systemctl restart singbox"
     
     # 删除备份
     rm -f "${CONFIG_OUTPUT}.backup"
+    
+    echo ""
+    echo "尝试自动重载配置..."
+    
+    # 检查是否有运行的容器
+    if docker ps --format '{{.Names}}' | grep -q "singbox-client"; then
+        echo "✓ 检测到 Docker 容器运行中"
+        if [ -x "${SCRIPT_DIR}/reload_config.sh" ]; then
+            "${SCRIPT_DIR}/reload_config.sh"
+        else
+            echo "⚠️ 重载脚本不存在或无执行权限"
+            echo "手动重载: docker-compose -f docker-compose-client.yml restart"
+        fi
+    elif systemctl is-active --quiet singbox 2>/dev/null; then
+        echo "✓ 检测到 systemd 服务运行中"
+        sudo systemctl reload singbox || sudo systemctl restart singbox
+        echo "✓ 服务已重载"
+    else
+        echo ""
+        echo "下一步:"
+        echo "  1. 检查配置: sing-box check -c ${CONFIG_OUTPUT}"
+        echo "  2. Docker: docker-compose -f docker-compose-client.yml restart"
+        echo "  3. systemd: sudo systemctl restart singbox"
+    fi
 else
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

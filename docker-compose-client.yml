@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  singbox:
+    # 使用华为云镜像
+    image: swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest
+    container_name: singbox-client
+    restart: unless-stopped
+    
+    # 网络模式：host（推荐，性能最好）
+    network_mode: host
+    
+    # 挂载配置文件
+    volumes:
+      - ./conf/config.json:/etc/sing-box/config.json:ro
+    
+    # 启动命令
+    command: run -c /etc/sing-box/config.json
+    
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
