@@ -64,8 +64,8 @@
 ```
 
 **访问**:
-- API: `http://127.0.0.1:9090`
-- 面板: `http://127.0.0.1:9090/ui`
+- API: `http://<服务器IP>:9090`
+- 面板: `http://<服务器IP>:9090/ui`
 - Secret: `@admin123`
 
 ### 4. DNS 配置 (dns)
@@ -332,7 +332,7 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
   "services": [
     {
       "type": "api",
-      "listen": "127.0.0.1",
+      "listen": "0.0.0.0",
       "listen_port": 9191,
       "secret": "@admin123",
       "access_control_allow_origin": ["*"],
@@ -349,8 +349,8 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
 
 ### 访问信息
 
-- **API 地址**: `http://127.0.0.1:9191`
-- **Dashboard**: `http://127.0.0.1:9191/dashboard/`
+- **API 地址**: `http://<服务器IP>:9191`
+- **Dashboard**: `http://<服务器IP>:9191/dashboard/`
 - **Secret**: `@admin123`
 
 ### API 端点
@@ -378,4 +378,51 @@ sing-box 提供原生的 API 服务（不同于 Clash API）。
 建议：
 - 使用 **Clash API (9090)** 进行节点切换和管理
 - 使用 **sing-box API (9191)** 查看流量统计和连接信息
+
+
+## 局域网访问
+
+### 监听配置
+
+两个 API 都监听在 `0.0.0.0`，可以从局域网任意设备访问：
+
+```json
+{
+  "experimental": {
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090"  // 所有网络接口
+    }
+  },
+  "services": [
+    {
+      "listen": "0.0.0.0",  // 所有网络接口
+      "listen_port": 9191
+    }
+  ]
+}
+```
+
+### 访问方式
+
+假设服务器 IP 为 `192.168.1.100`：
+
+- **Clash API**: `http://192.168.1.100:9090`
+- **sing-box API**: `http://192.168.1.100:9191`
+
+### 安全建议
+
+1. **内网使用**: 仅在受信任的局域网中使用
+2. **防火墙**: 生产环境建议配置防火墙规则
+3. **修改密钥**: 建议修改默认的 `@admin123`
+4. **VPN 访问**: 远程访问建议使用 VPN
+
+### 防火墙配置（可选）
+
+允许特定 IP 访问：
+
+```bash
+# 允许局域网访问
+sudo ufw allow from 192.168.1.0/24 to any port 9090
+sudo ufw allow from 192.168.1.0/24 to any port 9191
+```
 

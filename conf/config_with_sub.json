@@ -17,7 +17,7 @@
       "store_fakeip": false
     },
     "clash_api": {
-      "external_controller": ":9090",
+      "external_controller": "0.0.0.0:9090",
       "external_ui": "ui",
       "secret": "@admin123",
       "default_mode": "rule"
@@ -1416,7 +1416,7 @@
   "services": [
     {
       "type": "api",
-      "listen": "127.0.0.1",
+      "listen": "0.0.0.0",
       "listen_port": 9191,
       "secret": "@admin123",
       "access_control_allow_origin": [
