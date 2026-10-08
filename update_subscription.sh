@@ -41,8 +41,8 @@ docker run --rm \
   -e CLASH_SUBSCRIPTION_URL="${CLASH_SUBSCRIPTION_URL}" \
   -v "${SCRIPT_DIR}:/app" \
   -w /app \
-  swr.cn-east-3.myhuaweicloud.com/iflyelf/sing-box:latest \
-  python3 scripts/config_manager.py conf/config_with_sub.json conf/config.json once
+  python:3.11-slim \
+  sh -c "pip install -q pyyaml requests && python3 scripts/config_manager.py conf/config_with_sub.json conf/config.json once"
 
 if [ $? -eq 0 ]; then
     echo ""
