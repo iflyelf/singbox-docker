@@ -128,8 +128,58 @@ export CLASH_SUBSCRIPTION_ENABLED_3='true'
 - `N` 为订阅编号：1, 2, 3, ... 最多 99
 - 不带编号的 `CLASH_SUBSCRIPTION_URL` 也支持
 - `enabled` 可选值：`true`/`1`/`yes`/`on` 或 `false`/`0`/`no`/`off`
+- 环境变量优先级高于配置文件
 
-**详细文档**：[订阅环境变量配置指南](docs/subscription-env-vars.md)
+**组名称（Tag）作用示例**：
+
+```bash
+export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'
+```
+
+- 原始节点名：`香港 01`
+- 转换后：`🎉 xiaonuo🛺香港 01`
+
+**高级用法 - Docker Compose**：
+
+```yaml
+services:
+  singbox:
+    image: swr.cn-east-3.myhuaweicloud.com/iflyelf/singbox-client:latest
+    environment:
+      # 主订阅
+      - CLASH_SUBSCRIPTION_URL_1=https://xiaonuo.example.com/sub
+      - CLASH_SUBSCRIPTION_TAG_1=xiaonuo
+      - CLASH_SUBSCRIPTION_ENABLED_1=true
+      
+      # 备用订阅（禁用）
+      - CLASH_SUBSCRIPTION_URL_2=https://backup.example.com/sub
+      - CLASH_SUBSCRIPTION_TAG_2=backup
+      - CLASH_SUBSCRIPTION_ENABLED_2=false
+    volumes:
+      - ./conf:/etc/sing-box
+```
+
+**高级用法 - 环境变量文件**：
+
+创建 `.env` 文件：
+
+```bash
+# .env
+CLASH_SUBSCRIPTION_URL_1=https://xiaonuo.example.com/sub
+CLASH_SUBSCRIPTION_TAG_1=xiaonuo
+CLASH_SUBSCRIPTION_ENABLED_1=true
+
+CLASH_SUBSCRIPTION_URL_2=https://airport.example.com/sub
+CLASH_SUBSCRIPTION_TAG_2=airport2
+CLASH_SUBSCRIPTION_ENABLED_2=true
+```
+
+使用：
+
+```bash
+source .env  # 加载环境变量
+./update_subscription.sh
+```
 
 #### 方式 2: 配置文件 + 环境变量混合
 
