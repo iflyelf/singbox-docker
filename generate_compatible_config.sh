@@ -172,6 +172,15 @@ jq '
             {
               "type": "https",
               "tag": "dns-remote",
+              "server": "dns.decloudus.com",
+              "server_port": 443,
+              "path": "/dns-query",
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-1",
               "server": "xiaonuo-dns.koyeb.app",
               "server_port": 443,
               "detour": "🚀 节点选择",
@@ -179,7 +188,7 @@ jq '
             },
             {
               "type": "https",
-              "tag": "dns-remote-backup-1",
+              "tag": "dns-remote-backup-2",
               "server": "dns.digitale-gesellschaft.ch",
               "server_port": 443,
               "detour": "🚀 节点选择",
@@ -187,7 +196,7 @@ jq '
             },
             {
               "type": "https",
-              "tag": "dns-remote-backup-2",
+              "tag": "dns-remote-backup-3",
               "server": "doh.applied-privacy.net",
               "server_port": 443,
               "path": "/query",
@@ -196,18 +205,10 @@ jq '
             },
             {
               "type": "https",
-              "tag": "dns-remote-backup-3",
+              "tag": "dns-remote-backup-4",
               "server": "odvr.nic.cz",
               "server_port": 443,
               "path": "/doh",
-              "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
-            },
-            {
-              "type": "https",
-              "tag": "dns-remote-backup-4",
-              "server": "dns.decloudus.com",
-              "server_port": 443,
               "detour": "🚀 节点选择",
               "domain_resolver": "dns-system"
             },
