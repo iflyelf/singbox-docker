@@ -29,6 +29,7 @@ echo "正在转换配置..."
 # 3. 移除所有 routing_mark 字段
 # 4. 移除 route.default_mark 字段
 # 5. 移除不兼容的 inbound (tproxy)
+# 6. 为 TUN inbound 添加 platform.http_proxy 配置
 jq '
   # 1. 确保 http_clients 存在
   if .http_clients == null or (.http_clients | length == 0) then
@@ -67,6 +68,22 @@ jq '
   | if .inbounds then
       .inbounds |= map(select(.type != "tproxy"))
     else . end
+  
+  # 7. 为 TUN inbound 添加 platform.http_proxy 配置
+  | (.inbounds // [] | map(select(.type == "mixed")) | .[0].listen_port // 7890) as $proxy_port
+  | if .inbounds then
+      .inbounds |= map(
+        if .type == "tun" then
+          if .platform.http_proxy.enabled == null then
+            .platform.http_proxy = {
+              "enabled": true,
+              "server": "127.0.0.1",
+              "server_port": $proxy_port
+            }
+          else . end
+        else . end
+      )
+    else . end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
@@ -89,12 +106,14 @@ echo ""
 echo "兼容性适配："
 echo "  ✓ 已添加 http_clients 配置（direct-http）"
 echo "  ✓ 已为远程 rule-set 添加 http_client（替代废弃的 download_detour）"
+echo "  ✓ 已为 TUN inbound 添加 platform.http_proxy 配置"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
 echo ""
 echo "适用平台："
-echo "  • Windows (解决 routing_mark, http_client, tproxy 问题)"
+echo "  • Windows (解决 routing_mark, http_client, tproxy, TUN 代理问题)"
+echo "  • Android/iOS (TUN 代理模式)"
 echo "  • macOS (跨平台兼容)"
 echo "  • 其他需要显式 http_client 的环境"
 echo ""
