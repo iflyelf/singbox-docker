@@ -81,7 +81,39 @@ docker logs -f singbox-client
 
 客户端编排使用 `host` 网络、TUN 设备和所需内核挂载。原服务端 `docker-compose.yml` 不受影响。
 
-### 2. 更新订阅
+### 2. Windows 平台使用
+
+Windows 平台由于系统限制，部分 Linux 特性不支持（如 `routing_mark`），且远程 rule-set 需要显式指定下载出站。
+
+**生成 Windows 专用配置**：
+
+```bash
+# 1. 先按正常流程更新订阅生成 config.json
+./update_subscription.sh
+
+# 2. 转换为 Windows 兼容配置
+./generate_win_config.sh conf/config.json conf/win-config.json
+```
+
+**自动处理**：
+- ✅ 为所有远程 rule-set 添加 `download_detour: "🎯 全球直连"`
+- ✅ 移除 `routing_mark` 字段（Windows 不支持）
+- ✅ 移除 `route.default_mark` 字段
+
+**Windows 启动**：
+
+下载 [sing-box Windows 版本](https://github.com/SagerNet/sing-box/releases)，然后：
+
+```cmd
+sing-box.exe run -c conf/win-config.json
+```
+
+**注意事项**：
+- Windows 需要管理员权限运行（TUN 设备）
+- 每次更新订阅后需要重新生成 Windows 配置
+- `win-config.json` 不会提交到 Git（已加入 .gitignore）
+
+### 3. 更新订阅
 
 支持多种订阅格式自动识别：
 - ✅ **Clash/Mihomo YAML** - 标准 Clash 配置格式
@@ -258,7 +290,7 @@ export SUBSCRIPTION_TAG_1='myairport'
 5. 根据节点名匹配区域分组
 6. 生成 `conf/config.json`（或容器内 `/etc/sing-box/runtime/config.json`）
 
-### 3. 重新加载配置
+### 4. 重新加载配置
 
 ```bash
 ./reload_config.sh

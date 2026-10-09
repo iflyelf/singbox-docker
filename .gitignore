@@ -7,3 +7,4 @@ __pycache__/
 
 # 订阅更新备份
 conf/*.backup
+conf/win-config.json
