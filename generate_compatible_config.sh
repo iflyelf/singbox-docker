@@ -71,8 +71,7 @@ jq '
       .inbounds |= map(select(.type != "tproxy"))
     else . end
   
-  # 7. 添加 TUN inbound（如果不存在）并配置 platform.http_proxy
-  | (.inbounds // [] | map(select(.type == "mixed")) | .[0].listen_port // 7890) as $proxy_port
+  # 7. 添加 TUN inbound（如果不存在）
   | if (.inbounds // [] | map(select(.type == "tun")) | length == 0) then
       # 不存在 TUN，添加新的（使用新标准，移除废弃字段）
       .inbounds += [{
@@ -81,29 +80,14 @@ jq '
         "mtu": 9000,
         "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
         "auto_route": true,
-        "strict_route": true,
-        "platform": {
-          "http_proxy": {
-            "enabled": true,
-            "server": "127.0.0.1",
-            "server_port": $proxy_port
-          }
-        }
+        "strict_route": true
       }]
     else
-      # 已存在 TUN，为其添加 platform.http_proxy（如果没有）并移除废弃字段
+      # 已存在 TUN，移除废弃字段和 platform.http_proxy
       .inbounds |= map(
         if .type == "tun" then
-          # 移除废弃字段
-          (. | del(.sniff, .sniff_override_destination, .domain_strategy))
-          # 添加 platform.http_proxy
-          | if .platform.http_proxy.enabled == null then
-            .platform.http_proxy = {
-              "enabled": true,
-              "server": "127.0.0.1",
-              "server_port": $proxy_port
-            }
-          else . end
+          # 移除废弃字段和 platform.http_proxy
+          del(.sniff, .sniff_override_destination, .domain_strategy, .platform)
         else . end
       )
     end
@@ -274,7 +258,7 @@ echo ""
 echo "兼容性适配："
 echo "  ✓ 已添加 http_clients 配置（direct-http）"
 echo "  ✓ 已为远程 rule-set 添加 http_client（替代废弃的 download_detour）"
-echo "  ✓ 已添加 TUN inbound 并配置 platform.http_proxy"
+echo "  ✓ 已添加 TUN inbound（不配置 platform.http_proxy 以避免冲突）"
 echo "  ✓ 已添加 DNS 配置（使用 sing-box 1.12.0+ 新格式）"
 echo "  ✓ DNS 服务器使用新格式（type 字段，无 legacy 格式）"
 echo "  ✓ 已移除废弃的 outbound DNS 规则项"
