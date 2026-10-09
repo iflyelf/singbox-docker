@@ -102,7 +102,7 @@ jq '
       else . end |
       # 检查是否已有针对 TUN 的 sniff rule（使用更精确的匹配）
       if ([.route.rules[] | select(.inbound[0] == $tun_tag and .action == "sniff")] | length == 0) then
-        # 在规则列表开头添加 sniff、resolve、内网域名和内网 IP 直连规则
+        # 在规则列表开头添加 sniff、resolve、内网域名、内网 IP 和进程排除规则
         .route.rules = [
           {
             "inbound": [$tun_tag],
@@ -139,6 +139,10 @@ jq '
               "fe80::/10",
               "ff00::/8"
             ],
+            "outbound": "🎯 全球直连"
+          },
+          {
+            "process_path": ["/usr/local/bin/lanproxy-gateway"],
             "outbound": "🎯 全球直连"
           }
         ] + .route.rules
