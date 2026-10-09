@@ -237,6 +237,7 @@ services:
     volumes:
       - ./conf/config.json:/etc/sing-box/config.json:ro,cached
       - ./conf/config_with_sub.json:/etc/sing-box/config_with_sub.json:ro,cached
+      - ./runtime:/etc/sing-box/runtime:rw,cached  # 持久化运行时配置
 ```
 
 启动容器：
@@ -254,8 +255,17 @@ docker logs singbox-client | grep -E "订阅源|使用配置"
 **工作原理**：
 
 - ✅ 检测到 `SUBSCRIPTION_URL*` 环境变量：拉取订阅，生成 `/etc/sing-box/runtime/config.json` 并启动
+- ✅ 配置持久化到宿主机 `./runtime/config.json`（容器重启后保留）
 - ❌ 未设置订阅变量：直接使用挂载的 `conf/config.json`
 - ⚠️ 订阅拉取失败：回退到挂载的 `conf/config.json` 或上次成功生成的配置
+
+**配置文件说明**：
+
+| 路径 | 用途 | 持久化 | 说明 |
+|-----|------|-------|------|
+| `./conf/config.json` | 静态配置/回退配置 | ✅ 宿主机 | 只读挂载，手动更新用 |
+| `./conf/config_with_sub.json` | 订阅配置模板 | ✅ 宿主机 | 只读挂载，定义配置结构 |
+| `./runtime/config.json` | 容器运行时配置 | ✅ 宿主机 | 读写挂载，容器自动生成 |
 
 **自动更新机制**：
 
@@ -263,11 +273,22 @@ docker logs singbox-client | grep -E "订阅源|使用配置"
 2. **定时自动更新**：后台任务按设定间隔（默认1小时）自动拉取订阅
 3. **热重载配置**：更新成功后向 sing-box 发送 HUP 信号，实现无缝重载（不中断连接）
 4. **失败保护**：更新失败时保持当前配置继续运行
+5. **配置持久化**：自动生成的配置保存到 `./runtime/config.json`，容器重启后保留
 
 查看自动更新日志：
 
 ```bash
 docker logs -f singbox-client | grep "自动更新\|订阅源\|重载"
+```
+
+查看运行时配置：
+
+```bash
+# 查看容器生成的配置文件
+cat runtime/config.json
+
+# 或生成跨平台兼容配置用于本地测试
+./generate_compatible_config.sh runtime/config.json conf/compatible-config.json
 ```
 
 禁用自动更新：

@@ -20,6 +20,7 @@ services:
     volumes:
       - ./conf/config.json:/etc/sing-box/config.json:ro,cached
       - ./conf/config_with_sub.json:/etc/sing-box/config_with_sub.json:ro,cached
+      - ./runtime:/etc/sing-box/runtime:rw,cached
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro,cached
       - /etc/localtime:/etc/localtime:ro,cached
       - /sys/fs/bpf:/sys/fs/bpf:rw,cached

@@ -8,3 +8,7 @@ __pycache__/
 # 订阅更新备份
 conf/*.backup
 conf/compatible-config.json
+
+# 容器运行时生成的配置
+runtime/*
+!runtime/.gitkeep
