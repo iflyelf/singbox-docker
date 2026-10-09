@@ -83,37 +83,35 @@ docker logs -f singbox-client
 
 ### 2. 更新订阅
 
-#### 方式 1: 环境变量完全控制（推荐）
+支持多种订阅格式自动识别：
+- ✅ **Clash/Mihomo YAML** - 标准 Clash 配置格式
+- ✅ **sing-box JSON** - 原生 sing-box 配置
+- ✅ **Base64/URI** - vmess://, vless://, trojan://, ss://, hysteria2://, tuic://, anytls:// 等分享链接
 
-**单个订阅源**：
+支持协议：shadowsocks, vmess, vless (含 Reality), trojan, hysteria2, tuic, anytls (shadowtls v3)
+
+#### 方式 1: 通过 .env 文件（推荐）
+
+创建 `.env` 文件（不要提交到 Git）：
 
 ```bash
-export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-export CLASH_SUBSCRIPTION_TAG='myairport'          # 可选，组名称
-export CLASH_SUBSCRIPTION_ENABLED='true'           # 可选，默认 true
+# .env - 订阅地址含 token，不要提交到仓库
+SUBSCRIPTION_URL_1='https://example1.com/subscription'
+SUBSCRIPTION_TAG_1='66jc'
+SUBSCRIPTION_ENABLED_1='true'
 
-./update_subscription.sh
+SUBSCRIPTION_URL_2='https://example2.com/subscription'
+SUBSCRIPTION_TAG_2='yiyuan'
+SUBSCRIPTION_ENABLED_2='true'
+
+SUBSCRIPTION_URL_3='https://example3.com/subscription'
+SUBSCRIPTION_TAG_3='xiaonuo'
+SUBSCRIPTION_ENABLED_3='true'
 ```
 
-**多个订阅源**：
+更新订阅：
 
 ```bash
-# 主订阅
-export CLASH_SUBSCRIPTION_URL_1='https://xiaonuo.example.com/sub'
-export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'
-export CLASH_SUBSCRIPTION_ENABLED_1='true'
-
-# 备用订阅
-export CLASH_SUBSCRIPTION_URL_2='https://backup.example.com/sub'
-export CLASH_SUBSCRIPTION_TAG_2='backup'
-export CLASH_SUBSCRIPTION_ENABLED_2='false'        # 禁用
-
-# 第三方机场
-export CLASH_SUBSCRIPTION_URL_3='https://airport.example.com/sub'
-export CLASH_SUBSCRIPTION_TAG_3='airport3'
-export CLASH_SUBSCRIPTION_ENABLED_3='true'
-
-# 更新订阅
 ./update_subscription.sh
 ```
 
@@ -121,145 +119,104 @@ export CLASH_SUBSCRIPTION_ENABLED_3='true'
 
 | 环境变量 | 说明 | 必填 | 默认值 |
 |---------|------|------|--------|
-| `CLASH_SUBSCRIPTION_URL_N` | 订阅地址 | ✅ | 无 |
-| `CLASH_SUBSCRIPTION_TAG_N` | 组名称/标签前缀 | ❌ | `airportN` |
-| `CLASH_SUBSCRIPTION_ENABLED_N` | 启用状态 (true/false) | ❌ | `true` |
+| `SUBSCRIPTION_URL_N` | 订阅地址 | ✅ | 无 |
+| `SUBSCRIPTION_TAG_N` | 组名称/标签前缀 | ❌ | `airportN` |
+| `SUBSCRIPTION_ENABLED_N` | 启用状态 (true/false) | ❌ | `true` |
+| `SUBSCRIPTION_UA_N` | User-Agent | ❌ | `clash.meta` |
 
 - `N` 为订阅编号：1, 2, 3, ... 最多 99
-- 不带编号的 `CLASH_SUBSCRIPTION_URL` 也支持
+- 不带编号的 `SUBSCRIPTION_URL` 也支持
 - `enabled` 可选值：`true`/`1`/`yes`/`on` 或 `false`/`0`/`no`/`off`
-- 环境变量优先级高于配置文件
 
-**组名称（Tag）作用示例**：
+**组名称（Tag）作用**：
 
-```bash
-export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'
+每个订阅源会生成独立的分组，便于管理和切换：
+
+```
+订阅源 tag: 66jc
+生成分组: 🎉 66jc🛺 (自动选择), 🎉 66jc (手动选择)
+节点标签: 🎉 [66jc] 香港 HKT01
 ```
 
-- 原始节点名：`香港 01`
-- 转换后：`🎉 xiaonuo🛺香港 01`
+区域分组自动填充：🇹🇼 台湾、🇭🇰 香港、🇯🇵 日本、🇸🇬 新加坡等
 
-**Docker Compose 环境变量**：
+#### 方式 2: Docker Compose 自动生成配置
 
-容器启动时，入口脚本检测到 `CLASH_SUBSCRIPTION_URL` 或 `CLASH_SUBSCRIPTION_URL_N` 后，会用 `config_with_sub.json` 模板拉取订阅，生成 `/etc/sing-box/runtime/config.json` 并以它启动。挂载的 `conf/config.json` 不会被修改。
+容器启动时自动检测环境变量，拉取订阅并生成运行配置：
 
-- 未设置订阅变量：直接使用挂载的 `conf/config.json`
-- 订阅拉取失败：回退到挂载的 `conf/config.json`
-- 修改订阅变量后执行 `docker compose -f docker-compose-client.yml up -d` 重建容器生效
-
-在 `docker-compose-client.yml` 中配置：
+**docker-compose-client.yml**：
 
 ```yaml
 services:
   singbox:
     image: swr.cn-east-3.myhuaweicloud.com/iflyelf/singbox-client:latest
-    environment:
-      # 主订阅
-      - CLASH_SUBSCRIPTION_URL_1=https://xiaonuo.example.com/sub
-      - CLASH_SUBSCRIPTION_TAG_1=xiaonuo
-      - CLASH_SUBSCRIPTION_ENABLED_1=true
-
-      # 备用订阅（禁用）
-      - CLASH_SUBSCRIPTION_URL_2=https://backup.example.com/sub
-      - CLASH_SUBSCRIPTION_TAG_2=backup
-      - CLASH_SUBSCRIPTION_ENABLED_2=false
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./conf/config.json:/etc/sing-box/config.json:ro,cached
       - ./conf/config_with_sub.json:/etc/sing-box/config_with_sub.json:ro,cached
 ```
 
-默认编排已写成 `${CLASH_SUBSCRIPTION_URL_1:-}` 形式，也可以在项目目录的 `.env` 文件中设置，Compose 会自动读取。订阅地址含 token，`.env` 不要提交到仓库。
+启动容器：
+
+```bash
+docker compose -f docker-compose-client.yml up -d
+```
 
 查看订阅是否生效：
 
 ```bash
-docker logs singbox-client | grep -E "订阅|使用配置"
+docker logs singbox-client | grep -E "订阅源|使用配置"
 ```
 
-**高级用法 - 环境变量文件**：
+**工作原理**：
 
-创建 `.env` 文件：
+- ✅ 检测到 `SUBSCRIPTION_URL*` 环境变量：拉取订阅，生成 `/etc/sing-box/runtime/config.json` 并启动
+- ❌ 未设置订阅变量：直接使用挂载的 `conf/config.json`
+- ⚠️ 订阅拉取失败：回退到挂载的 `conf/config.json` 或上次成功生成的配置
+
+修改订阅后重启容器：
 
 ```bash
-# .env
-CLASH_SUBSCRIPTION_URL_1=https://xiaonuo.example.com/sub
-CLASH_SUBSCRIPTION_TAG_1=xiaonuo
-CLASH_SUBSCRIPTION_ENABLED_1=true
-
-CLASH_SUBSCRIPTION_URL_2=https://airport.example.com/sub
-CLASH_SUBSCRIPTION_TAG_2=airport2
-CLASH_SUBSCRIPTION_ENABLED_2=true
+docker compose -f docker-compose-client.yml restart
 ```
 
-使用：
+#### 方式 3: 手动 export（单次使用）
 
 ```bash
-source .env  # 加载环境变量
+export SUBSCRIPTION_URL_1='https://example.com/sub'
+export SUBSCRIPTION_TAG_1='myairport'
 ./update_subscription.sh
 ```
-
-#### 方式 2: 配置文件 + 环境变量混合
-
-编辑 `conf/config_with_sub.json`：
-
-```json
-{
-  "_subscription": {
-    "sources": [
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_1",
-        "tag_prefix": "xiaonuo",
-        "enabled": true
-      },
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_2",
-        "tag_prefix": "airport2",
-        "enabled": true
-      }
-    ],
-    "update_interval": 3600,
-    "auto_update": true,
-    "user_agent": "clash"
-  }
-}
-```
-
-**参数说明**：
-- `url`: 订阅地址，支持 `env:变量名` 格式从环境变量读取
-- `tag_prefix`: 标签前缀，用于区分不同订阅源的节点（可被环境变量覆盖）
-- `enabled`: 是否启用该订阅源（可被环境变量覆盖）
-
-然后设置环境变量并更新：
-
-```bash
-# 设置订阅地址
-export CLASH_SUBSCRIPTION_URL_1='https://xiaonuo-订阅地址'
-export CLASH_SUBSCRIPTION_URL_2='https://其他机场订阅地址'
-
-# 可选：通过环境变量覆盖 tag 和 enabled
-export CLASH_SUBSCRIPTION_TAG_1='custom_tag'
-export CLASH_SUBSCRIPTION_ENABLED_2='false'
-
-# 更新订阅
-./update_subscription.sh
-```
-
-**优先级**：环境变量 > 配置文件
 
 #### 节点分组规则
 
-- **xiaonuo 订阅**：节点标签 `🎉 xiaonuo🛺节点名`，自动加入 `🎉 xiaonuo` 组
-- **airport2 订阅**：节点标签 `🎉 airport2🛺节点名`，自动加入 `🎉 airport2` 组
-- **全局代理组**：`♻️ 自动选择`、`🔯 故障转移`、`🔮 负载均衡` 等包含所有订阅源的节点
+**订阅源分组**（自动生成）：
+- 每个订阅源生成两个分组：
+  - `🎉 {tag}🛺` - urltest 自动选择最快节点
+  - `🎉 {tag}` - selector 手动选择节点
+- 节点标签格式：`🎉 [{tag}] 节点名`
 
-脚本会：
+**区域分组**（智能匹配）：
+- 🇹🇼 台湾、🇭🇰 香港、🇯🇵 日本、🇸🇬 新加坡、🇰🇷 韩国
+- 🇷🇺 俄罗斯、🇨🇦 加拿大、🇺🇸 美国、🇬🇧 英国、🇫🇷 法国等
+- 🚞 其它地区（未匹配到的节点）
 
-1. 通过华为云 `singbox-client` 镜像运行 `scripts/config_manager.py`
-2. 从 `conf/config_with_sub.json` 生成 `conf/config.json`
-3. 生成失败时恢复备份
-4. 检测到客户端容器后重启该容器，确保新配置完整生效
+**全局分组**：
+- 🌐 全部节点 - 所有订阅源的全部节点
+- ♻️ 自动选择 - urltest 自动选择最快
+- 🔯 故障转移 - 主节点失败时切换
+- 🔮 负载均衡 - 轮询/散列策略
 
-`_subscription` 是转换工具使用的元数据，不是 sing-box 原生字段，因此不能直接交给 sing-box 运行。运行时始终使用 `conf/config.json`。
+**工作流程**：
+
+1. 读取环境变量中的订阅配置
+2. 拉取订阅，自动识别格式（Clash YAML / sing-box JSON / Base64 URI）
+3. 转换为 sing-box outbound 格式
+4. 根据 tag 创建订阅源分组
+5. 根据节点名匹配区域分组
+6. 生成 `conf/config.json`（或容器内 `/etc/sing-box/runtime/config.json`）
 
 ### 3. 重新加载配置
 
@@ -375,13 +332,7 @@ docker compose -f docker-compose-client.yml up -d
 # 查看日志
 docker logs -f singbox-client
 
-# 单订阅更新
-export CLASH_SUBSCRIPTION_URL='你的订阅地址'
-./update_subscription.sh
-
-# 多订阅更新
-export CLASH_SUBSCRIPTION_URL_1='xiaonuo订阅地址'
-export CLASH_SUBSCRIPTION_URL_2='其他机场订阅地址'
+# 订阅更新（需先创建 .env 文件）
 ./update_subscription.sh
 
 # 重新加载配置
@@ -397,9 +348,10 @@ docker compose -f docker-compose-client.yml down
 
 ```bash
 # 检查环境变量
-env | grep CLASH_SUBSCRIPTION_URL
+env | grep SUBSCRIPTION_URL
 
-# 手动测试订阅地址
+# 查看 .env 文件
+cat .env
 curl -v "你的订阅地址"
 ```
 
