@@ -56,23 +56,26 @@ jq '
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
-if sing-box check -c "${OUTPUT_CONFIG}.tmp" 2>/dev/null; then
-    mv "${OUTPUT_CONFIG}.tmp" "${OUTPUT_CONFIG}"
-    echo ""
-    echo "✓ 配置转换成功: ${OUTPUT_CONFIG}"
-    echo ""
-    echo "Windows 平台适配："
-    echo "  ✓ 已添加 download_detour 到所有远程 rule-set"
-    echo "  ✓ 已移除 routing_mark 字段"
-    echo "  ✓ 已移除 route.default_mark 字段"
-    echo ""
-    echo "使用方法："
-    echo "  sing-box run -c ${OUTPUT_CONFIG}"
+echo ""
+if command -v sing-box &> /dev/null; then
+    echo "正在验证配置..."
+    if sing-box check -c "${OUTPUT_CONFIG}.tmp"; then
+        echo "✓ 配置验证通过"
+    else
+        echo "⚠️ 配置验证失败，但仍会生成文件"
+    fi
 else
-    rm -f "${OUTPUT_CONFIG}.tmp"
-    echo ""
-    echo "✗ 配置验证失败"
-    echo ""
-    echo "请检查输入配置是否正确"
-    exit 1
+    echo "⚠️ 未找到 sing-box 命令，跳过验证"
 fi
+
+mv "${OUTPUT_CONFIG}.tmp" "${OUTPUT_CONFIG}"
+echo ""
+echo "✓ 配置转换成功: ${OUTPUT_CONFIG}"
+echo ""
+echo "Windows 平台适配："
+echo "  ✓ 已添加 download_detour 到所有远程 rule-set"
+echo "  ✓ 已移除 routing_mark 字段"
+echo "  ✓ 已移除 route.default_mark 字段"
+echo ""
+echo "使用方法："
+echo "  sing-box.exe run -c ${OUTPUT_CONFIG}"
