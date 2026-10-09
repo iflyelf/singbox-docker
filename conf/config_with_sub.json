@@ -1031,6 +1031,12 @@
         "action": "sniff"
       },
       {
+        "process_path": [
+          "/usr/local/bin/lanproxy-gateway"
+        ],
+        "outbound": "🎯 全球直连"
+      },
+      {
         "ip_cidr": [
           "127.0.0.0/8",
           "::1/128"
