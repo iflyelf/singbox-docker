@@ -1023,6 +1023,12 @@
     "default_http_client": "direct-http",
     "rules": [
       {
+        "inbound": [
+          "mixed-in"
+        ],
+        "action": "sniff"
+      },
+      {
         "protocol": [
           "http",
           "tls",
