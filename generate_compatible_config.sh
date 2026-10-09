@@ -202,15 +202,27 @@ jq '
               "domain_resolver": "dns-system"
             },
             {
-              "type": "https",
+              "type": "udp",
               "tag": "dns-direct",
+              "server": "223.5.5.5",
+              "server_port": 53
+            },
+            {
+              "type": "udp",
+              "tag": "dns-direct-backup",
+              "server": "119.29.29.29",
+              "server_port": 53
+            },
+            {
+              "type": "https",
+              "tag": "dns-direct-doh",
               "server": "dns.alidns.com",
               "server_port": 443,
               "domain_resolver": "dns-system"
             },
             {
               "type": "https",
-              "tag": "dns-direct-backup",
+              "tag": "dns-direct-doh-backup",
               "server": "doh.pub",
               "server_port": 443,
               "domain_resolver": "dns-system"
