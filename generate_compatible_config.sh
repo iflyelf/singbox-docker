@@ -79,9 +79,9 @@ jq '
         "type": "tun",
         "tag": "tun-in",
         "mtu": 9000,
-        "address": ["172.19.0.1/30"],
+        "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
         "auto_route": true,
-        "strict_route": false,
+        "strict_route": true,
         "platform": {
           "http_proxy": {
             "enabled": true,
