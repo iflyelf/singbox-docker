@@ -102,7 +102,7 @@ jq '
       else . end |
       # 检查是否已有针对 TUN 的 sniff rule（使用更精确的匹配）
       if ([.route.rules[] | select(.inbound[0] == $tun_tag and .action == "sniff")] | length == 0) then
-        # 在规则列表开头添加 sniff 和 resolve actions
+        # 在规则列表开头添加 sniff、resolve 和内网域名直连规则
         .route.rules = [
           {
             "inbound": [$tun_tag],
@@ -112,6 +112,10 @@ jq '
             "inbound": [$tun_tag],
             "action": "resolve",
             "strategy": "ipv4_only"
+          },
+          {
+            "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
+            "outbound": "🎯 全球直连"
           }
         ] + .route.rules
       else . end
@@ -192,12 +196,21 @@ jq '
               "tag": "dns-system"
             },
             {
+              "type": "local",
+              "tag": "dns-local",
+              "detour": "direct"
+            },
+            {
               "type": "udp",
               "tag": "dns-block",
               "server": "0.0.0.0"
             }
           ],
           "rules": [
+            {
+              "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
+              "server": "dns-local"
+            },
             {
               "clash_mode": "Direct",
               "server": "dns-direct"
