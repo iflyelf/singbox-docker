@@ -1,36 +1,8 @@
 {
   "_subscription": {
-    "_comment": "订阅配置 - 支持多个订阅源",
-    "sources": [
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_1",
-        "tag_prefix": "xiaonuo",
-        "enabled": true
-      },
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_2",
-        "tag_prefix": "airport2",
-        "enabled": false
-      },
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_3",
-        "tag_prefix": "airport3",
-        "enabled": false
-      },
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_4",
-        "tag_prefix": "airport4",
-        "enabled": false
-      },
-      {
-        "url": "env:CLASH_SUBSCRIPTION_URL_5",
-        "tag_prefix": "airport5",
-        "enabled": false
-      }
-    ],
-    "update_interval": 3600,
-    "auto_update": true,
-    "user_agent": "clash"
+    "_comment": "订阅配置 - 通过环境变量设置，支持多格式（Clash YAML, sing-box JSON, Base64/URI）",
+    "_usage": "环境变量: SUBSCRIPTION_URL_N, SUBSCRIPTION_TAG_N, SUBSCRIPTION_ENABLED_N, SUBSCRIPTION_UA_N",
+    "user_agent": "clash.meta"
   },
   "log": {
     "level": "info",

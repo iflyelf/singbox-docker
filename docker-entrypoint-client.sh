@@ -23,11 +23,11 @@ cleanup() {
 
 trap cleanup INT TERM QUIT
 
-# 是否设置了 CLASH_SUBSCRIPTION_URL 或 CLASH_SUBSCRIPTION_URL_N（非空）
+# 是否设置了 SUBSCRIPTION_URL 或 SUBSCRIPTION_URL_N（非空）
 has_subscription_env() {
     local name
-    for name in $(compgen -v CLASH_SUBSCRIPTION_URL); do
-        if [[ "${name}" =~ ^CLASH_SUBSCRIPTION_URL(_[0-9]+)?$ ]] && [[ -n "${!name}" ]]; then
+    for name in $(compgen -v SUBSCRIPTION_URL); do
+        if [[ "${name}" =~ ^SUBSCRIPTION_URL(_[0-9]+)?$ ]] && [[ -n "${!name}" ]]; then
             return 0
         fi
     done

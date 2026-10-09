@@ -11,12 +11,12 @@ services:
     restart: always
     cap_add:
       - ALL
-    # 订阅环境变量：设置后容器启动时自动拉取订阅并生成运行配置
+    # 订阅环境变量：通过 .env 文件配置（不提交到仓库）
+    # 设置后容器启动时自动拉取订阅并生成运行配置
     # 未设置时直接使用挂载的 conf/config.json
-    environment:
-      - CLASH_SUBSCRIPTION_URL_1=${CLASH_SUBSCRIPTION_URL_1:-}
-      - CLASH_SUBSCRIPTION_TAG_1=${CLASH_SUBSCRIPTION_TAG_1:-xiaonuo}
-      - CLASH_SUBSCRIPTION_ENABLED_1=${CLASH_SUBSCRIPTION_ENABLED_1:-true}
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - ./conf/config.json:/etc/sing-box/config.json:ro,cached
       - ./conf/config_with_sub.json:/etc/sing-box/config_with_sub.json:ro,cached
