@@ -197,8 +197,7 @@ jq '
             },
             {
               "type": "local",
-              "tag": "dns-local",
-              "detour": "direct"
+              "tag": "dns-local"
             },
             {
               "type": "udp",
