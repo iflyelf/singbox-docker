@@ -1,7 +1,7 @@
 #!/bin/bash
 # sing-box 订阅更新脚本
 # 使用 Docker 运行，无需本地安装 Python 和依赖
-# 支持多订阅源
+# 支持多订阅源，支持环境变量控制组名称和启用状态
 
 set -e
 
@@ -19,19 +19,36 @@ echo ""
 if [ -z "${CLASH_SUBSCRIPTION_URL_1}" ] && [ -z "${CLASH_SUBSCRIPTION_URL}" ]; then
     echo "错误: 未设置订阅地址环境变量"
     echo ""
-    echo "使用方法（多订阅源）:"
-    echo "  export CLASH_SUBSCRIPTION_URL_1='xiaonuo订阅地址'"
-    echo "  export CLASH_SUBSCRIPTION_URL_2='其他机场订阅地址'"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "使用方法 1: 完整配置（推荐）"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  export CLASH_SUBSCRIPTION_URL_1='订阅地址1'"
+    echo "  export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'        # 可选，默认为 airport1"
+    echo "  export CLASH_SUBSCRIPTION_ENABLED_1='true'       # 可选，默认为 true"
+    echo ""
+    echo "  export CLASH_SUBSCRIPTION_URL_2='订阅地址2'"
+    echo "  export CLASH_SUBSCRIPTION_TAG_2='airport2'       # 可选"
+    echo "  export CLASH_SUBSCRIPTION_ENABLED_2='false'      # 可选，设为 false 禁用"
+    echo ""
     echo "  ./update_subscription.sh"
     echo ""
-    echo "使用方法（单订阅源，兼容旧版）:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "使用方法 2: 基础订阅（单源）"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "  export CLASH_SUBSCRIPTION_URL='订阅地址'"
+    echo "  export CLASH_SUBSCRIPTION_TAG='myairport'        # 可选"
+    echo "  export CLASH_SUBSCRIPTION_ENABLED='true'         # 可选"
     echo "  ./update_subscription.sh"
     echo ""
-    echo "说明:"
-    echo "  - CLASH_SUBSCRIPTION_URL_1 对应 xiaonuo 标签前缀"
-    echo "  - CLASH_SUBSCRIPTION_URL_2 对应 airport2 标签前缀"
-    echo "  - 在 config_with_sub.json 中配置 enabled: true/false 启用/禁用"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "环境变量说明"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  CLASH_SUBSCRIPTION_URL_N    订阅地址（必填）"
+    echo "  CLASH_SUBSCRIPTION_TAG_N    组名称/标签前缀（可选）"
+    echo "  CLASH_SUBSCRIPTION_ENABLED_N 启用状态: true/false（可选）"
+    echo ""
+    echo "  支持 N = 1, 2, 3, ... 最多 99 个订阅源"
+    echo "  启用状态可选值: true/1/yes/on 或 false/0/no/off"
     exit 1
 fi
 
@@ -40,9 +57,25 @@ echo "输出配置: ${CONFIG_OUTPUT}"
 echo ""
 
 # 显示已配置的订阅源
-[ -n "${CLASH_SUBSCRIPTION_URL_1}" ] && echo "✓ 订阅源 1 (xiaonuo): 已设置"
-[ -n "${CLASH_SUBSCRIPTION_URL_2}" ] && echo "✓ 订阅源 2 (airport2): 已设置"
-[ -n "${CLASH_SUBSCRIPTION_URL}" ] && echo "✓ 订阅源 (兼容模式): 已设置"
+if [ -n "${CLASH_SUBSCRIPTION_URL}" ]; then
+    tag="${CLASH_SUBSCRIPTION_TAG:-default}"
+    enabled="${CLASH_SUBSCRIPTION_ENABLED:-true}"
+    echo "✓ 订阅源 (基础): tag=${tag}, enabled=${enabled}"
+fi
+
+for i in {1..10}; do
+    url_var="CLASH_SUBSCRIPTION_URL_${i}"
+    tag_var="CLASH_SUBSCRIPTION_TAG_${i}"
+    enabled_var="CLASH_SUBSCRIPTION_ENABLED_${i}"
+    
+    if [ -n "${!url_var}" ]; then
+        tag="${!tag_var:-airport${i}}"
+        enabled="${!enabled_var:-true}"
+        echo "✓ 订阅源 ${i}: tag=${tag}, enabled=${enabled}"
+    fi
+done
+
+echo ""
 
 # 备份当前配置
 if [ -f "${CONFIG_OUTPUT}" ]; then
@@ -50,11 +83,24 @@ if [ -f "${CONFIG_OUTPUT}" ]; then
     echo "✓ 已备份当前配置"
 fi
 
-# 构建环境变量参数
+# 构建环境变量参数（自动传递所有 CLASH_SUBSCRIPTION_* 变量）
 ENV_ARGS=()
+
+# 传递基础订阅变量
 [ -n "${CLASH_SUBSCRIPTION_URL}" ] && ENV_ARGS+=(-e CLASH_SUBSCRIPTION_URL="${CLASH_SUBSCRIPTION_URL}")
-[ -n "${CLASH_SUBSCRIPTION_URL_1}" ] && ENV_ARGS+=(-e CLASH_SUBSCRIPTION_URL_1="${CLASH_SUBSCRIPTION_URL_1}")
-[ -n "${CLASH_SUBSCRIPTION_URL_2}" ] && ENV_ARGS+=(-e CLASH_SUBSCRIPTION_URL_2="${CLASH_SUBSCRIPTION_URL_2}")
+[ -n "${CLASH_SUBSCRIPTION_TAG}" ] && ENV_ARGS+=(-e CLASH_SUBSCRIPTION_TAG="${CLASH_SUBSCRIPTION_TAG}")
+[ -n "${CLASH_SUBSCRIPTION_ENABLED}" ] && ENV_ARGS+=(-e CLASH_SUBSCRIPTION_ENABLED="${CLASH_SUBSCRIPTION_ENABLED}")
+
+# 传递编号订阅变量（1-20）
+for i in {1..20}; do
+    url_var="CLASH_SUBSCRIPTION_URL_${i}"
+    tag_var="CLASH_SUBSCRIPTION_TAG_${i}"
+    enabled_var="CLASH_SUBSCRIPTION_ENABLED_${i}"
+    
+    [ -n "${!url_var}" ] && ENV_ARGS+=(-e "${url_var}=${!url_var}")
+    [ -n "${!tag_var}" ] && ENV_ARGS+=(-e "${tag_var}=${!tag_var}")
+    [ -n "${!enabled_var}" ] && ENV_ARGS+=(-e "${enabled_var}=${!enabled_var}")
+done
 
 # 使用 Docker 运行配置管理器
 echo ""

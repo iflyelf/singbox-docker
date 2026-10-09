@@ -83,16 +83,57 @@ docker logs -f singbox-client
 
 ### 2. 更新订阅
 
-#### 单订阅源（兼容模式）
+#### 方式 1: 环境变量完全控制（推荐）
+
+**单个订阅源**：
 
 ```bash
 export CLASH_SUBSCRIPTION_URL='你的订阅地址'
+export CLASH_SUBSCRIPTION_TAG='myairport'          # 可选，组名称
+export CLASH_SUBSCRIPTION_ENABLED='true'           # 可选，默认 true
+
 ./update_subscription.sh
 ```
 
-#### 多订阅源（推荐）
+**多个订阅源**：
 
-先编辑 `conf/config_with_sub.json`：
+```bash
+# 主订阅
+export CLASH_SUBSCRIPTION_URL_1='https://xiaonuo.example.com/sub'
+export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'
+export CLASH_SUBSCRIPTION_ENABLED_1='true'
+
+# 备用订阅
+export CLASH_SUBSCRIPTION_URL_2='https://backup.example.com/sub'
+export CLASH_SUBSCRIPTION_TAG_2='backup'
+export CLASH_SUBSCRIPTION_ENABLED_2='false'        # 禁用
+
+# 第三方机场
+export CLASH_SUBSCRIPTION_URL_3='https://airport.example.com/sub'
+export CLASH_SUBSCRIPTION_TAG_3='airport3'
+export CLASH_SUBSCRIPTION_ENABLED_3='true'
+
+# 更新订阅
+./update_subscription.sh
+```
+
+**环境变量说明**：
+
+| 环境变量 | 说明 | 必填 | 默认值 |
+|---------|------|------|--------|
+| `CLASH_SUBSCRIPTION_URL_N` | 订阅地址 | ✅ | 无 |
+| `CLASH_SUBSCRIPTION_TAG_N` | 组名称/标签前缀 | ❌ | `airportN` |
+| `CLASH_SUBSCRIPTION_ENABLED_N` | 启用状态 (true/false) | ❌ | `true` |
+
+- `N` 为订阅编号：1, 2, 3, ... 最多 99
+- 不带编号的 `CLASH_SUBSCRIPTION_URL` 也支持
+- `enabled` 可选值：`true`/`1`/`yes`/`on` 或 `false`/`0`/`no`/`off`
+
+**详细文档**：[订阅环境变量配置指南](docs/subscription-env-vars.md)
+
+#### 方式 2: 配置文件 + 环境变量混合
+
+编辑 `conf/config_with_sub.json`：
 
 ```json
 {
@@ -116,23 +157,29 @@ export CLASH_SUBSCRIPTION_URL='你的订阅地址'
 }
 ```
 
-**参数说明：**
-- `url`: 订阅地址，支持 `env:变量名` 格式
-- `tag_prefix`: 标签前缀，用于区分不同订阅源的节点
-- `enabled`: 是否启用该订阅源
+**参数说明**：
+- `url`: 订阅地址，支持 `env:变量名` 格式从环境变量读取
+- `tag_prefix`: 标签前缀，用于区分不同订阅源的节点（可被环境变量覆盖）
+- `enabled`: 是否启用该订阅源（可被环境变量覆盖）
 
 然后设置环境变量并更新：
 
 ```bash
-# 设置多个订阅地址
+# 设置订阅地址
 export CLASH_SUBSCRIPTION_URL_1='https://xiaonuo-订阅地址'
 export CLASH_SUBSCRIPTION_URL_2='https://其他机场订阅地址'
+
+# 可选：通过环境变量覆盖 tag 和 enabled
+export CLASH_SUBSCRIPTION_TAG_1='custom_tag'
+export CLASH_SUBSCRIPTION_ENABLED_2='false'
 
 # 更新订阅
 ./update_subscription.sh
 ```
 
-**节点分组规则：**
+**优先级**：环境变量 > 配置文件
+
+#### 节点分组规则
 
 - **xiaonuo 订阅**：节点标签 `🎉 xiaonuo🛺节点名`，自动加入 `🎉 xiaonuo` 组
 - **airport2 订阅**：节点标签 `🎉 airport2🛺节点名`，自动加入 `🎉 airport2` 组

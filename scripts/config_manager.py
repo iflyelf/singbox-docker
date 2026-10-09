@@ -33,20 +33,31 @@ class ConfigManager:
             
             # 新格式：多订阅源
             if 'sources' in sub_config:
-                for source in sub_config['sources']:
-                    if source.get('enabled', True):
-                        url = source.get('url', '')
-                        # 支持环境变量
-                        if url.startswith('env:'):
-                            env_var = url.split(':', 1)[1]
-                            url = os.environ.get(env_var, '')
-                        
-                        if url:
-                            self.subscription_sources.append({
-                                'url': url,
-                                'tag_prefix': source.get('tag_prefix', ''),
-                                'user_agent': sub_config.get('user_agent', 'clash')
-                            })
+                for idx, source in enumerate(sub_config['sources'], start=1):
+                    # 获取 URL（支持环境变量）
+                    url = source.get('url', '')
+                    if url.startswith('env:'):
+                        env_var = url.split(':', 1)[1]
+                        url = os.environ.get(env_var, '')
+                    
+                    # 获取 tag_prefix（支持环境变量覆盖）
+                    tag_prefix = source.get('tag_prefix', '')
+                    tag_prefix_env = os.environ.get(f'CLASH_SUBSCRIPTION_TAG_{idx}', '')
+                    if tag_prefix_env:
+                        tag_prefix = tag_prefix_env
+                    
+                    # 获取 enabled 状态（支持环境变量覆盖）
+                    enabled = source.get('enabled', True)
+                    enabled_env = os.environ.get(f'CLASH_SUBSCRIPTION_ENABLED_{idx}', '')
+                    if enabled_env:
+                        enabled = enabled_env.lower() in ['true', '1', 'yes', 'on']
+                    
+                    if enabled and url:
+                        self.subscription_sources.append({
+                            'url': url,
+                            'tag_prefix': tag_prefix,
+                            'user_agent': sub_config.get('user_agent', 'clash')
+                        })
             # 旧格式：单订阅 URL（兼容）
             elif 'url' in sub_config:
                 url = sub_config['url']
@@ -63,16 +74,48 @@ class ConfigManager:
             
             self.update_interval = sub_config.get('update_interval', 3600)
         
-        # 备用：如果没有配置任何订阅源，检查环境变量 CLASH_SUBSCRIPTION_URL
-        if not self.subscription_sources:
-            fallback_url = os.environ.get('CLASH_SUBSCRIPTION_URL', '')
-            if fallback_url:
-                print("提示: 使用环境变量 CLASH_SUBSCRIPTION_URL（兼容模式）")
-                self.subscription_sources.append({
-                    'url': fallback_url,
-                    'tag_prefix': '',
+        # 从环境变量直接读取订阅配置（优先级最高）
+        # 支持 CLASH_SUBSCRIPTION_URL、CLASH_SUBSCRIPTION_URL_1、CLASH_SUBSCRIPTION_URL_2 等
+        env_subscriptions = []
+        
+        # 检查基础 URL (CLASH_SUBSCRIPTION_URL)
+        base_url = os.environ.get('CLASH_SUBSCRIPTION_URL', '')
+        if base_url:
+            tag = os.environ.get('CLASH_SUBSCRIPTION_TAG', '')
+            enabled_str = os.environ.get('CLASH_SUBSCRIPTION_ENABLED', 'true')
+            enabled = enabled_str.lower() in ['true', '1', 'yes', 'on']
+            
+            if enabled:
+                env_subscriptions.append({
+                    'url': base_url,
+                    'tag_prefix': tag,
                     'user_agent': 'clash'
                 })
+        
+        # 检查编号 URL (CLASH_SUBSCRIPTION_URL_1, _2, _3 等)
+        for i in range(1, 100):  # 支持最多 99 个订阅
+            url = os.environ.get(f'CLASH_SUBSCRIPTION_URL_{i}', '')
+            if not url:
+                # 如果连续 5 个都没有，认为后面也没有了
+                if i > 5 and all(not os.environ.get(f'CLASH_SUBSCRIPTION_URL_{j}', '') for j in range(i-4, i)):
+                    break
+                continue
+            
+            tag = os.environ.get(f'CLASH_SUBSCRIPTION_TAG_{i}', f'airport{i}')
+            enabled_str = os.environ.get(f'CLASH_SUBSCRIPTION_ENABLED_{i}', 'true')
+            enabled = enabled_str.lower() in ['true', '1', 'yes', 'on']
+            
+            if enabled:
+                env_subscriptions.append({
+                    'url': url,
+                    'tag_prefix': tag,
+                    'user_agent': 'clash'
+                })
+        
+        # 如果环境变量提供了订阅，使用环境变量的（覆盖配置文件）
+        if env_subscriptions:
+            print(f"提示: 使用环境变量订阅配置（共 {len(env_subscriptions)} 个订阅源）")
+            self.subscription_sources = env_subscriptions
         
         return self.config
     
