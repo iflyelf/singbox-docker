@@ -123,10 +123,13 @@ SUBSCRIPTION_ENABLED_3='true'
 | `SUBSCRIPTION_TAG_N` | 组名称/标签前缀 | ❌ | `airportN` |
 | `SUBSCRIPTION_ENABLED_N` | 启用状态 (true/false) | ❌ | `true` |
 | `SUBSCRIPTION_UA_N` | User-Agent | ❌ | `clash.meta` |
+| `SUBSCRIPTION_AUTO_UPDATE` | 自动更新开关 | ❌ | `true` |
+| `SUBSCRIPTION_UPDATE_INTERVAL` | 更新间隔（秒） | ❌ | `3600` |
 
 - `N` 为订阅编号：1, 2, 3, ... 最多 99
 - 不带编号的 `SUBSCRIPTION_URL` 也支持
 - `enabled` 可选值：`true`/`1`/`yes`/`on` 或 `false`/`0`/`no`/`off`
+- 自动更新功能：容器内定时拉取订阅并热重载配置（不重启容器）
 
 **组名称（Tag）作用**：
 
@@ -142,7 +145,24 @@ SUBSCRIPTION_ENABLED_3='true'
 
 #### 方式 2: Docker Compose 自动生成配置
 
-容器启动时自动检测环境变量，拉取订阅并生成运行配置：
+容器启动时自动检测环境变量，拉取订阅并生成运行配置。**支持订阅自动更新和热重载**（无需重启容器）。
+
+**.env 配置示例**：
+
+```bash
+# 订阅源配置
+SUBSCRIPTION_URL_1='https://example1.com/subscription'
+SUBSCRIPTION_TAG_1='66jc'
+SUBSCRIPTION_ENABLED_1='true'
+
+SUBSCRIPTION_URL_2='https://example2.com/subscription'
+SUBSCRIPTION_TAG_2='yiyuan'
+SUBSCRIPTION_ENABLED_2='true'
+
+# 自动更新配置
+SUBSCRIPTION_AUTO_UPDATE='true'         # 启用自动更新
+SUBSCRIPTION_UPDATE_INTERVAL='3600'     # 更新间隔（秒），3600 = 1小时
+```
 
 **docker-compose-client.yml**：
 
@@ -176,7 +196,27 @@ docker logs singbox-client | grep -E "订阅源|使用配置"
 - ❌ 未设置订阅变量：直接使用挂载的 `conf/config.json`
 - ⚠️ 订阅拉取失败：回退到挂载的 `conf/config.json` 或上次成功生成的配置
 
-修改订阅后重启容器：
+**自动更新机制**：
+
+1. **启动时初始化**：容器启动时立即拉取订阅生成配置
+2. **定时自动更新**：后台任务按设定间隔（默认1小时）自动拉取订阅
+3. **热重载配置**：更新成功后向 sing-box 发送 HUP 信号，实现无缝重载（不中断连接）
+4. **失败保护**：更新失败时保持当前配置继续运行
+
+查看自动更新日志：
+
+```bash
+docker logs -f singbox-client | grep "自动更新\|订阅源\|重载"
+```
+
+禁用自动更新：
+
+```bash
+# 在 .env 中设置
+SUBSCRIPTION_AUTO_UPDATE='false'
+```
+
+修改订阅源后重启容器：
 
 ```bash
 docker compose -f docker-compose-client.yml restart
