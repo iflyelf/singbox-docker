@@ -55,7 +55,11 @@ RULES=(
 # ============ 主逻辑 ============
 echo "🚀 开始更新 sing-box RuleSet -> ${SINGBOX_RULESET}"
 mkdir -p "${SINGBOX_RULESET}"
-rm -rf "${SINGBOX_RULESET}"/*
+
+# 使用临时目录下载，下载成功后再替换
+TEMP_DIR="${SINGBOX_RULESET}.tmp"
+rm -rf "${TEMP_DIR}"
+mkdir -p "${TEMP_DIR}"
 sleep 0.5
 
 fail=0
@@ -63,7 +67,7 @@ success=0
 for rule in "${RULES[@]}"; do
   src="${rule}.srs"
   url="${BASE_URL}/${src}"
-  if wget -q --no-check-certificate "${url}" -O "${SINGBOX_RULESET}/${src}"; then
+  if wget -q --no-check-certificate "${url}" -O "${TEMP_DIR}/${src}"; then
     echo "✅ ${src}"
     success=$((success + 1))
   else
@@ -82,9 +86,16 @@ echo "📁 保存位置: ${SINGBOX_RULESET}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ ${fail} -eq 0 ]; then
+  # 所有文件下载成功，替换旧文件
+  echo "🔄 替换旧规则集..."
+  rm -rf "${SINGBOX_RULESET}"/*
+  mv "${TEMP_DIR}"/* "${SINGBOX_RULESET}/"
+  rmdir "${TEMP_DIR}"
   echo "🎉 所有规则集下载完成！"
+  exit 0
 else
-  echo "⚠️ 部分规则集下载失败，请检查网络或 URL"
+  # 部分失败，保留旧文件
+  echo "⚠️ 部分规则集下载失败，保留旧文件"
+  rm -rf "${TEMP_DIR}"
+  exit "${fail}"
 fi
-
-exit "${fail}"
