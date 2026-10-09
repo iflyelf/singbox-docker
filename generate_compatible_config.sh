@@ -1,15 +1,15 @@
 #!/bin/bash
-# Windows 平台专用配置生成脚本
-# 自动处理 Windows 不支持的字段
+# sing-box 兼容性配置生成工具
+# 自动处理跨平台兼容性问题，适用于 Windows, macOS 等平台
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INPUT_CONFIG="${1:-conf/config.json}"
-OUTPUT_CONFIG="${2:-conf/win-config.json}"
+OUTPUT_CONFIG="${2:-conf/compatible-config.json}"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Windows 平台配置转换工具"
+echo "sing-box 兼容性配置生成工具"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "输入配置: ${INPUT_CONFIG}"
@@ -72,10 +72,17 @@ mv "${OUTPUT_CONFIG}.tmp" "${OUTPUT_CONFIG}"
 echo ""
 echo "✓ 配置转换成功: ${OUTPUT_CONFIG}"
 echo ""
-echo "Windows 平台适配："
+echo "兼容性适配："
 echo "  ✓ 已添加 download_detour 到所有远程 rule-set"
-echo "  ✓ 已移除 routing_mark 字段"
+echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo ""
+echo "适用平台："
+echo "  • Windows (解决 routing_mark 和 download_detour 问题)"
+echo "  • macOS (跨平台兼容)"
+echo "  • 其他需要显式 download_detour 的环境"
+echo ""
 echo "使用方法："
-echo "  sing-box.exe run -c ${OUTPUT_CONFIG}"
+echo "  Linux:   sing-box run -c ${OUTPUT_CONFIG}"
+echo "  Windows: sing-box.exe run -c ${OUTPUT_CONFIG}"
+echo "  macOS:   sing-box run -c ${OUTPUT_CONFIG}"
