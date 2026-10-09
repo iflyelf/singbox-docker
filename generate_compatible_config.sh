@@ -102,7 +102,7 @@ jq '
       else . end |
       # 检查是否已有针对 TUN 的 sniff rule（使用更精确的匹配）
       if ([.route.rules[] | select(.inbound[0] == $tun_tag and .action == "sniff")] | length == 0) then
-        # 在规则列表开头添加 sniff、resolve 和内网域名直连规则
+        # 在规则列表开头添加 sniff、resolve、内网域名和内网 IP 直连规则
         .route.rules = [
           {
             "inbound": [$tun_tag],
@@ -115,6 +115,10 @@ jq '
           },
           {
             "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home", ".iflytek.com"],
+            "outbound": "🎯 全球直连"
+          },
+          {
+            "ip_cidr": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
             "outbound": "🎯 全球直连"
           }
         ] + .route.rules
