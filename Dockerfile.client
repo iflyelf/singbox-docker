@@ -61,6 +61,9 @@ COPY --from=nginx /usr/local/share/lua /usr/local/share/lua
 COPY --from=nginx /data/nginx /data/nginx
 COPY conf/nginx-client/vhost/default.conf /data/nginx/conf/vhost/default.conf
 COPY docker-entrypoint-client.sh /usr/bin/docker-entrypoint-client.sh
+# 订阅转换工具与默认模板：容器启动时根据 CLASH_SUBSCRIPTION_* 环境变量生成运行配置
+COPY scripts/config_manager.py /usr/local/share/singbox/config_manager.py
+COPY conf/config_with_sub.json /usr/local/share/singbox/config_with_sub.json
 
 RUN set -eux; \
     ldconfig; \
@@ -72,7 +75,8 @@ RUN set -eux; \
     ln -sf /dev/stdout /data/nginx/logs/access.log; \
     ln -sf /dev/stderr /data/nginx/logs/error.log; \
     ln -sf /data/nginx/sbin/nginx /usr/sbin/nginx; \
-    chmod 0755 /usr/bin/sing-box /usr/bin/docker-entrypoint-client.sh; \
+    chmod 0755 /usr/bin/sing-box /usr/bin/docker-entrypoint-client.sh /usr/local/share/singbox/config_manager.py; \
+    python3 -c "import yaml, requests"; \
     sing-box version; \
     nginx -t -p /data/nginx -c /data/nginx/conf/nginx.conf
 

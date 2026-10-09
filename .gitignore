@@ -1,0 +1,9 @@
+# 订阅地址含 token，不提交
+.env
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 订阅更新备份
+conf/*.backup

@@ -139,7 +139,15 @@ export CLASH_SUBSCRIPTION_TAG_1='xiaonuo'
 - 原始节点名：`香港 01`
 - 转换后：`🎉 xiaonuo🛺香港 01`
 
-**高级用法 - Docker Compose**：
+**Docker Compose 环境变量**：
+
+容器启动时，入口脚本检测到 `CLASH_SUBSCRIPTION_URL` 或 `CLASH_SUBSCRIPTION_URL_N` 后，会用 `config_with_sub.json` 模板拉取订阅，生成 `/etc/sing-box/runtime/config.json` 并以它启动。挂载的 `conf/config.json` 不会被修改。
+
+- 未设置订阅变量：直接使用挂载的 `conf/config.json`
+- 订阅拉取失败：回退到挂载的 `conf/config.json`
+- 修改订阅变量后执行 `docker compose -f docker-compose-client.yml up -d` 重建容器生效
+
+在 `docker-compose-client.yml` 中配置：
 
 ```yaml
 services:
@@ -150,13 +158,22 @@ services:
       - CLASH_SUBSCRIPTION_URL_1=https://xiaonuo.example.com/sub
       - CLASH_SUBSCRIPTION_TAG_1=xiaonuo
       - CLASH_SUBSCRIPTION_ENABLED_1=true
-      
+
       # 备用订阅（禁用）
       - CLASH_SUBSCRIPTION_URL_2=https://backup.example.com/sub
       - CLASH_SUBSCRIPTION_TAG_2=backup
       - CLASH_SUBSCRIPTION_ENABLED_2=false
     volumes:
-      - ./conf:/etc/sing-box
+      - ./conf/config.json:/etc/sing-box/config.json:ro,cached
+      - ./conf/config_with_sub.json:/etc/sing-box/config_with_sub.json:ro,cached
+```
+
+默认编排已写成 `${CLASH_SUBSCRIPTION_URL_1:-}` 形式，也可以在项目目录的 `.env` 文件中设置，Compose 会自动读取。订阅地址含 token，`.env` 不要提交到仓库。
+
+查看订阅是否生效：
+
+```bash
+docker logs singbox-client | grep -E "订阅|使用配置"
 ```
 
 **高级用法 - 环境变量文件**：

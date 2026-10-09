@@ -122,7 +122,10 @@ class ConfigManager:
     def fetch_subscription(self, url: str, user_agent: str) -> Optional[dict]:
         """获取订阅内容"""
         try:
-            print(f"正在获取订阅: {url[:50]}...")
+            # 只输出协议和主机，避免订阅 token 写入日志
+            from urllib.parse import urlsplit
+            parts = urlsplit(url)
+            print(f"正在获取订阅: {parts.scheme}://{parts.netloc}/...")
             headers = {'User-Agent': user_agent}
             response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()

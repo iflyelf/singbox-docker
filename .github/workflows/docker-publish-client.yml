@@ -18,6 +18,7 @@ on:
       - 'docker-entrypoint-client.sh'
       - 'docker-compose-client.yml'
       - 'conf/config.json'
+      - 'conf/config_with_sub.json'
       - 'conf/nginx-client/**'
       - 'scripts/**'
       - 'update_subscription.sh'
