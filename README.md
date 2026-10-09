@@ -1,6 +1,28 @@
 # singbox-docker
 
-sing-box 客户端镜像与配置。客户端镜像只运行 sing-box 和 nginx，不包含服务端的 `supervisord`、VMess 入站或 Trojan 入站配置。
+sing-box 客户端与服务端 Docker 镜像与配置。
+
+- **客户端镜像** (`singbox-client`): 只运行 sing-box 和 nginx，用于代理客户端场景
+- **服务端镜像** (`sing-box`): 包含 supervisord、VMess/Trojan 入站配置，用于代理服务器场景
+
+## 目录
+
+- [客户端 (Client)](#客户端-client)
+  - [功能](#功能)
+  - [镜像](#镜像)
+  - [快速开始](#快速开始)
+  - [配置说明](#配置说明)
+  - [故障排查](#故障排查)
+- [服务端 (Server)](#服务端-server)
+  - [功能](#服务端功能)
+  - [快速开始](#服务端快速开始)
+  - [配置说明](#服务端配置说明)
+- [安全建议](#安全建议)
+- [参考](#参考)
+
+---
+
+# 客户端 (Client)
 
 ## 功能
 
@@ -273,11 +295,243 @@ systemctl status smartdns
 docker logs -f singbox-client
 ```
 
+---
+
+# 服务端 (Server)
+
+## 服务端功能
+
+- 使用最新稳定版 sing-box
+- 使用 supervisord 管理多个服务进程
+- 支持 VMess、Trojan、Shadowsocks 等入站协议
+- 内置多种出站配置（Direct、Block、DNS）
+- 支持完整的路由规则和规则集
+- TLS 证书自动管理（可选）
+- 服务端监控和日志管理
+
+## 服务端快速开始
+
+### 1. 部署服务端
+
+```bash
+cd /path/to/singbox-docker
+
+# 编辑配置文件
+vim config/server-config.json
+
+# 使用 docker-compose.yml 启动服务端
+docker-compose up -d singbox
+
+# 查看日志
+docker logs -f singbox
+```
+
+### 2. 检查服务状态
+
+```bash
+# 进入容器
+docker exec -it singbox bash
+
+# 检查 supervisord 管理的服务
+supervisorctl status
+
+# 检查 sing-box 运行状态
+ps aux | grep sing-box
+```
+
+### 3. 测试连接
+
+```bash
+# 从客户端测试 VMess 连接（假设服务端 IP 为 1.2.3.4）
+# 使用客户端工具连接到 vmess://...
+
+# 检查服务端日志
+docker logs singbox | grep -i "accepted"
+```
+
+## 服务端配置说明
+
+### 配置文件位置
+
+服务端配置通常位于：
+- `config/server-config.json` - 主配置文件
+- `config/cert/` - TLS 证书目录（如果使用）
+
+### 基本配置结构
+
+```json
+{
+  "log": {
+    "level": "info"
+  },
+  "inbounds": [
+    {
+      "type": "vmess",
+      "tag": "vmess-in",
+      "listen": "::",
+      "listen_port": 8080,
+      "users": [
+        {
+          "uuid": "your-uuid-here",
+          "alterId": 0
+        }
+      ]
+    },
+    {
+      "type": "trojan",
+      "tag": "trojan-in",
+      "listen": "::",
+      "listen_port": 8443,
+      "users": [
+        {
+          "password": "your-password-here"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "certificate_path": "/config/cert/fullchain.pem",
+        "key_path": "/config/cert/privkey.pem"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "protocol": "dns",
+        "outbound": "dns-out"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "block"
+      }
+    ]
+  }
+}
+```
+
+### 端口映射
+
+在 `docker-compose.yml` 中配置：
+
+```yaml
+services:
+  singbox:
+    ports:
+      - "8080:8080"   # VMess
+      - "8443:8443"   # Trojan with TLS
+      - "1080:1080"   # SOCKS5 (可选)
+```
+
+### 数据卷
+
+```yaml
+volumes:
+  - /data/www/singbox/config:/config
+  - /data/www/singbox/logs:/var/log/sing-box
+  - /data/www/singbox/cert:/config/cert  # TLS 证书
+```
+
+### 环境变量
+
+可在 `docker-compose.yml` 中设置：
+
+```yaml
+environment:
+  - TZ=Asia/Shanghai
+  - SING_BOX_LOG_LEVEL=info
+```
+
+### 安全配置
+
+1. **修改默认 UUID 和密码**：
+   ```bash
+   # 生成新的 UUID
+   uuidgen
+   # 或使用在线工具
+   ```
+
+2. **启用 TLS**：
+   - 使用 Let's Encrypt 或自签名证书
+   - 配置证书路径
+
+3. **限制访问**：
+   - 使用防火墙规则
+   - 配置 IP 白名单（在 sing-box 配置中）
+
+### 更新服务端配置
+
+```bash
+# 编辑配置
+vim config/server-config.json
+
+# 重启服务
+docker restart singbox
+
+# 或重载配置（如果支持）
+docker exec singbox supervisorctl restart sing-box
+```
+
+### 服务端故障排查
+
+#### 连接被拒绝
+
+```bash
+# 检查端口是否监听
+docker exec singbox netstat -tlnp | grep sing-box
+
+# 检查防火墙
+iptables -L -n | grep 8080
+
+# 检查日志
+docker logs singbox | tail -50
+```
+
+#### TLS 证书问题
+
+```bash
+# 验证证书
+openssl x509 -in /data/www/singbox/cert/fullchain.pem -text -noout
+
+# 检查证书权限
+docker exec singbox ls -la /config/cert/
+```
+
+#### 服务无法启动
+
+```bash
+# 检查配置文件语法
+docker exec singbox sing-box check -c /config/server-config.json
+
+# 查看 supervisord 日志
+docker exec singbox cat /var/log/supervisor/supervisord.log
+```
+
 ## 安全建议
+
+### 客户端
 
 - 修改默认 API 密钥
 - `9090`、`9191` 监听 `0.0.0.0`，应通过防火墙限制为可信局域网
 - 不要把真实订阅 URL 或生成后含真实节点的 `config.json` 提交到公共仓库
+
+### 服务端
+
+- **强制修改默认凭证**：UUID、密码必须使用强随机值
+- **启用 TLS**：生产环境必须使用 TLS 加密传输
+- **限制访问源**：使用防火墙或 sing-box 规则限制客户端 IP
+- **定期更新**：保持 sing-box 和系统更新到最新版本
+- **日志审计**：定期检查访问日志，发现异常及时处理
+- **端口隐藏**：不要使用默认端口，使用非标准端口并配置伪装
 
 ## 参考
 
