@@ -131,6 +131,128 @@ jq '
         ] + .route.rules
       else . end
     else . end
+  
+  # 9. 为 TUN 模式添加 DNS 配置（如果不存在）
+  | if (.inbounds // [] | map(select(.type == "tun")) | length > 0) then
+      if .dns == null then
+        .dns = {
+          "servers": [
+            {
+              "type": "https",
+              "tag": "dns-remote",
+              "server": "xiaonuo-dns.koyeb.app",
+              "server_port": 443,
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-1",
+              "server": "dns.digitale-gesellschaft.ch",
+              "server_port": 443,
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-2",
+              "server": "doh.applied-privacy.net",
+              "server_port": 443,
+              "path": "/query",
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-3",
+              "server": "odvr.nic.cz",
+              "server_port": 443,
+              "path": "/doh",
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-4",
+              "server": "dns.decloudus.com",
+              "server_port": 443,
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-remote-backup-5",
+              "server": "doh.cleanbrowsing.org",
+              "server_port": 443,
+              "path": "/doh/security-filter/",
+              "detour": "🚀 节点选择",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-direct",
+              "server": "dns.alidns.com",
+              "server_port": 443,
+              "detour": "🎯 全球直连",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "https",
+              "tag": "dns-direct-backup",
+              "server": "doh.pub",
+              "server_port": 443,
+              "detour": "🎯 全球直连",
+              "domain_resolver": "dns-system"
+            },
+            {
+              "type": "local",
+              "tag": "dns-system"
+            },
+            {
+              "type": "udp",
+              "tag": "dns-block",
+              "server": "0.0.0.0"
+            }
+          ],
+          "rules": [
+            {
+              "clash_mode": "Direct",
+              "server": "dns-direct"
+            },
+            {
+              "clash_mode": "Global",
+              "server": "dns-remote"
+            },
+            {
+              "action": "evaluate",
+              "server": "dns-remote"
+            },
+            {
+              "query_type": ["A", "AAAA"],
+              "match_response": true,
+              "ip_cidr": ["192.168.0.0/16", "172.16.0.0/12", "10.0.0.0/8"],
+              "server": "dns-system"
+            },
+            {
+              "rule_set": ["ChinaDomain"],
+              "server": "dns-direct"
+            }
+          ],
+          "final": "dns-remote",
+          "strategy": "ipv4_only",
+          "disable_cache": false,
+          "disable_expire": false
+        }
+      else . end
+    else . end
+  
+  # 10. 设置 route.default_domain_resolver（如果有 DNS 配置）
+  | if .dns.servers then
+      if .route == null then
+        .route = {}
+      else . end
+      | .route.default_domain_resolver = {"server": "dns-system"}
+    else . end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
@@ -154,6 +276,9 @@ echo "兼容性适配："
 echo "  ✓ 已添加 http_clients 配置（direct-http）"
 echo "  ✓ 已为远程 rule-set 添加 http_client（替代废弃的 download_detour）"
 echo "  ✓ 已添加 TUN inbound 并配置 platform.http_proxy"
+echo "  ✓ 已添加 DNS 配置（使用 sing-box 1.12.0+ 新格式）"
+echo "  ✓ DNS 服务器使用新格式（type 字段，无 legacy 格式）"
+echo "  ✓ 已移除废弃的 outbound DNS 规则项"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
