@@ -204,8 +204,7 @@ jq '
               "type": "udp",
               "tag": "dns-intranet",
               "server": "10.0.9.60",
-              "server_port": 53,
-              "detour": "direct"
+              "server_port": 53
             },
             {
               "type": "udp",
