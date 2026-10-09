@@ -98,7 +98,9 @@ docker logs -f singbox-client
 **自动处理**：
 - ✅ 添加 `http_clients` 配置（direct-http）
 - ✅ 为所有远程 rule-set 添加 `http_client`（替代废弃的 `download_detour`）
-- ✅ 为 TUN inbound 添加 `platform.http_proxy` 配置（Windows/Android/iOS 必需）
+- ✅ 添加 TUN inbound 并配置 `platform.http_proxy`（Windows/Android/iOS 必需）
+- ✅ 移除 TUN 废弃字段（sniff, sniff_override_destination）
+- ✅ 添加 route rule actions（sniff, resolve）替代 inbound 字段
 - ✅ 移除 `routing_mark` 字段（Windows/部分平台不支持）
 - ✅ 移除 `route.default_mark` 字段
 - ✅ 移除 `tproxy` inbound（Windows 不支持）
@@ -113,11 +115,13 @@ docker logs -f singbox-client
 - `tproxy` inbound：Windows 不支持透明代理
 - `routing_mark`：Linux 特有的路由标记功能
 - `route.default_mark`：依赖 routing_mark 的配置
+- TUN `sniff` 字段：已在 sing-box 1.11.0 废弃，1.13.0 移除
 
 **新特性（sing-box 1.14.0+）**：
 - ✅ 使用 `http_client` 替代已废弃的 `download_detour`
 - ✅ 符合 sing-box 1.16.0+ 要求（download_detour 将被移除）
 - ✅ TUN inbound 自动配置 `platform.http_proxy`（代理模式，不捕获流量）
+- ✅ 使用 route rule actions 替代废弃的 inbound sniff 字段
 
 **启动方式**：
 

@@ -73,12 +73,10 @@ jq '
   # 7. 添加 TUN inbound（如果不存在）并配置 platform.http_proxy
   | (.inbounds // [] | map(select(.type == "mixed")) | .[0].listen_port // 7890) as $proxy_port
   | if (.inbounds // [] | map(select(.type == "tun")) | length == 0) then
-      # 不存在 TUN，添加新的
+      # 不存在 TUN，添加新的（使用新标准，移除废弃字段）
       .inbounds += [{
         "type": "tun",
         "tag": "tun-in",
-        "sniff": true,
-        "sniff_override_destination": false,
         "mtu": 9000,
         "address": ["172.19.0.1/30"],
         "auto_route": true,
@@ -92,10 +90,13 @@ jq '
         }
       }]
     else
-      # 已存在 TUN，为其添加 platform.http_proxy（如果没有）
+      # 已存在 TUN，为其添加 platform.http_proxy（如果没有）并移除废弃字段
       .inbounds |= map(
         if .type == "tun" then
-          if .platform.http_proxy.enabled == null then
+          # 移除废弃字段
+          (. | del(.sniff, .sniff_override_destination, .domain_strategy))
+          # 添加 platform.http_proxy
+          | if .platform.http_proxy.enabled == null then
             .platform.http_proxy = {
               "enabled": true,
               "server": "127.0.0.1",
@@ -105,6 +106,31 @@ jq '
         else . end
       )
     end
+  
+  # 8. 为 TUN inbound 添加 route rule actions（替代废弃的 inbound 字段）
+  | if (.inbounds // [] | map(select(.type == "tun" and .tag != null)) | length > 0) then
+      # 获取 TUN inbound 的 tag
+      (.inbounds | map(select(.type == "tun")) | .[0].tag) as $tun_tag |
+      # 确保 route.rules 存在
+      if .route.rules == null then
+        .route.rules = []
+      else . end |
+      # 检查是否已有针对 TUN 的 sniff rule（使用更精确的匹配）
+      if ([.route.rules[] | select(.inbound[0] == $tun_tag and .action == "sniff")] | length == 0) then
+        # 在规则列表开头添加 sniff 和 resolve actions
+        .route.rules = [
+          {
+            "inbound": [$tun_tag],
+            "action": "sniff"
+          },
+          {
+            "inbound": [$tun_tag],
+            "action": "resolve",
+            "strategy": "ipv4_only"
+          }
+        ] + .route.rules
+      else . end
+    else . end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
