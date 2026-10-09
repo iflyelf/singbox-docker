@@ -40,6 +40,7 @@
     "cache_file": {
       "enabled": true,
       "path": "cache.db",
+      "cache_id": "singbox-client",
       "store_fakeip": false
     },
     "clash_api": {
@@ -745,7 +746,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -755,7 +756,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -765,7 +766,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -775,7 +776,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -785,7 +786,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -795,7 +796,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -805,7 +806,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -815,7 +816,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -825,7 +826,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -835,7 +836,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -845,7 +846,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -855,7 +856,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -865,7 +866,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -875,7 +876,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -997,7 +998,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -1007,7 +1008,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -1017,7 +1018,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -1027,7 +1028,7 @@
       "outbounds": [
         "🎯 全球直连"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://www.apple.com/library/test/success.html",
       "interval": "30s",
       "tolerance": 10
     },
@@ -1228,205 +1229,205 @@
         "tag": "XiaoNuoReject",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoReject.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoReject.srs"
       },
       {
         "tag": "BanAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanAD.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanAD.srs"
       },
       {
         "tag": "BanProgramAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanProgramAD.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanProgramAD.srs"
       },
       {
         "tag": "BanEasyList",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyList.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyList.srs"
       },
       {
         "tag": "BanEasyListChina",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyListChina.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyListChina.srs"
       },
       {
         "tag": "BanEasyPrivacy",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyPrivacy.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyPrivacy.srs"
       },
       {
         "tag": "XiaoNuoDirect",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoDirect.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoDirect.srs"
       },
       {
         "tag": "LocalAreaNetwork",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/LocalAreaNetwork.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/LocalAreaNetwork.srs"
       },
       {
         "tag": "ChinaIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaIp.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaIp.srs"
       },
       {
         "tag": "ChinaDomain",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaDomain.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaDomain.srs"
       },
       {
         "tag": "ChinaCompanyIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaCompanyIp.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaCompanyIp.srs"
       },
       {
         "tag": "Download",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Download.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Download.srs"
       },
       {
         "tag": "UnBan",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/UnBan.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/UnBan.srs"
       },
       {
         "tag": "ChinaMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaMedia.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaMedia.srs"
       },
       {
         "tag": "Bilibili",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Bilibili.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bilibili.srs"
       },
       {
         "tag": "OneDrive",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/OneDrive.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OneDrive.srs"
       },
       {
         "tag": "Microsoft",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Microsoft.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Microsoft.srs"
       },
       {
         "tag": "Apple",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Apple.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Apple.srs"
       },
       {
         "tag": "Epic",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Epic.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Epic.srs"
       },
       {
         "tag": "Sony",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Sony.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Sony.srs"
       },
       {
         "tag": "Steam",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Steam.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Steam.srs"
       },
       {
         "tag": "NetEaseMusic",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/NetEaseMusic.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/NetEaseMusic.srs"
       },
       {
         "tag": "Dns",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Dns.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Dns.srs"
       },
       {
         "tag": "Telegram",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs"
       },
       {
         "tag": "AI",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/AI.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/AI.srs"
       },
       {
         "tag": "OpenAi",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/OpenAi.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OpenAi.srs"
       },
       {
         "tag": "YouTube",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/YouTube.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/YouTube.srs"
       },
       {
         "tag": "Netflix",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Netflix.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Netflix.srs"
       },
       {
         "tag": "Bahamut",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Bahamut.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bahamut.srs"
       },
       {
         "tag": "ProxyMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyMedia.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyMedia.srs"
       },
       {
         "tag": "BilibiliHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BilibiliHMT.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BilibiliHMT.srs"
       },
       {
         "tag": "IqiyiHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/IqiyiHMT.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/IqiyiHMT.srs"
       },
       {
         "tag": "ProxyGFWlist",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyGFWlist.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyGFWlist.srs"
       },
       {
         "tag": "XiaoNuoProxy",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoProxy.srs",
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoProxy.srs"
       }
     ],
     "final": "🎯 全球直连",
