@@ -32,12 +32,13 @@ echo "正在转换配置..."
 # 6. 添加 TUN inbound（如果不存在）
 # 7. 为 TUN inbound 添加 platform.http_proxy 配置
 jq '
-  # 1. 确保 http_clients 存在
+  # 1. 确保 http_clients 存在并移除无意义的 detour
   if .http_clients == null or (.http_clients | length == 0) then
-    .http_clients = [{"tag": "direct-http", "detour": "direct"}]
+    .http_clients = [{"tag": "direct-http"}]
   elif (.http_clients | map(select(.tag == "direct-http")) | length == 0) then
-    .http_clients += [{"tag": "direct-http", "detour": "direct"}]
+    .http_clients += [{"tag": "direct-http"}]
   else . end
+  | .http_clients |= map(if .tag == "direct-http" then del(.detour) else . end)
   
   # 2. 为远程 rule-set 添加 http_client，移除旧的 download_detour
   | if .route.rule_set then
