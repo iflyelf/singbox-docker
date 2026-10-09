@@ -127,19 +127,38 @@ sing-box.exe run -c conf/win-config.json
 创建 `.env` 文件（不要提交到 Git）：
 
 ```bash
-# .env - 订阅地址含 token，不要提交到仓库
+# 复制模板文件
+cp .env.example .env
+
+# 编辑填入真实订阅地址
+nano .env
+```
+
+**.env 文件示例**：
+
+```bash
+# Subscription source 1
 SUBSCRIPTION_URL_1='https://example1.com/subscription'
 SUBSCRIPTION_TAG_1='66jc'
 SUBSCRIPTION_ENABLED_1='true'
 
+# Subscription source 2
 SUBSCRIPTION_URL_2='https://example2.com/subscription'
 SUBSCRIPTION_TAG_2='yiyuan'
 SUBSCRIPTION_ENABLED_2='true'
 
-SUBSCRIPTION_URL_3='https://example3.com/subscription'
-SUBSCRIPTION_TAG_3='xiaonuo'
-SUBSCRIPTION_ENABLED_3='true'
+# Auto-update configuration
+# Enable auto-update: true or false
+SUBSCRIPTION_AUTO_UPDATE='true'
+# Update interval in seconds, 3600 = 1 hour
+SUBSCRIPTION_UPDATE_INTERVAL='3600'
 ```
+
+**⚠️ 注意事项**：
+- ❌ **不要使用行内注释**：`VAR='value' # comment` 会导致 export 解析错误
+- ✅ **使用独立行注释**：注释必须单独成行
+- ✅ **仓库提供 `.env.example` 模板**，复制后填入真实订阅地址
+- ✅ **`.env` 文件已加入 `.gitignore`**，不会被提交到仓库
 
 更新订阅：
 
