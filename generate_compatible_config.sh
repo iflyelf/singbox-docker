@@ -114,7 +114,7 @@ jq '
             "strategy": "ipv4_only"
           },
           {
-            "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
+            "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home", ".iflytek.com"],
             "outbound": "🎯 全球直连"
           }
         ] + .route.rules
@@ -208,7 +208,7 @@ jq '
           ],
           "rules": [
             {
-              "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
+              "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home", ".iflytek.com"],
               "server": "dns-local"
             },
             {
