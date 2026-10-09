@@ -1201,205 +1201,239 @@
         "tag": "XiaoNuoReject",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoReject.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoReject.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BanAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanAD.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanAD.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BanProgramAD",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanProgramAD.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanProgramAD.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BanEasyList",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyList.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyList.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BanEasyListChina",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyListChina.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyListChina.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BanEasyPrivacy",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyPrivacy.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BanEasyPrivacy.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "XiaoNuoDirect",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoDirect.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoDirect.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "LocalAreaNetwork",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/LocalAreaNetwork.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/LocalAreaNetwork.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ChinaIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaIp.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaIp.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ChinaDomain",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaDomain.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaDomain.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ChinaCompanyIp",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaCompanyIp.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaCompanyIp.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Download",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Download.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Download.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "UnBan",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/UnBan.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/UnBan.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ChinaMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaMedia.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ChinaMedia.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Bilibili",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Bilibili.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bilibili.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "OneDrive",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/OneDrive.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OneDrive.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Microsoft",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Microsoft.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Microsoft.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Apple",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Apple.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Apple.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Epic",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Epic.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Epic.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Sony",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Sony.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Sony.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Steam",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Steam.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Steam.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "NetEaseMusic",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/NetEaseMusic.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/NetEaseMusic.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Dns",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Dns.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Dns.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Telegram",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Telegram.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "AI",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/AI.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/AI.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "OpenAi",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/OpenAi.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/OpenAi.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "YouTube",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/YouTube.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/YouTube.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Netflix",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Netflix.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Netflix.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "Bahamut",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/Bahamut.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/Bahamut.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ProxyMedia",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyMedia.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyMedia.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "BilibiliHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/BilibiliHMT.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/BilibiliHMT.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "IqiyiHMT",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/IqiyiHMT.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/IqiyiHMT.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "ProxyGFWlist",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyGFWlist.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/ProxyGFWlist.srs",
+        "http_client": "direct-http"
       },
       {
         "tag": "XiaoNuoProxy",
         "type": "remote",
         "format": "binary",
-        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoProxy.srs"
+        "url": "https://link.onlysing.com/get/singbox/ruleset/XiaoNuoProxy.srs",
+        "http_client": "direct-http"
       }
     ],
     "final": "🎯 全球直连",

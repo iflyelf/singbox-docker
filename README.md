@@ -96,20 +96,25 @@ docker logs -f singbox-client
 ```
 
 **自动处理**：
-- ✅ 为所有远程 rule-set 添加 `download_detour: "🎯 全球直连"`
+- ✅ 添加 `http_clients` 配置（direct-http）
+- ✅ 为所有远程 rule-set 添加 `http_client`（替代废弃的 `download_detour`）
 - ✅ 移除 `routing_mark` 字段（Windows/部分平台不支持）
 - ✅ 移除 `route.default_mark` 字段
 - ✅ 移除 `tproxy` inbound（Windows 不支持）
 
 **适用场景**：
-- Windows 平台：解决 routing_mark, download_detour, tproxy 等兼容性问题
+- Windows 平台：解决 routing_mark, http_client, tproxy 等兼容性问题
 - macOS 平台：跨平台兼容性
-- 其他需要显式 download_detour 的环境
+- 其他需要显式 http_client 的环境
 
 **移除的不兼容特性**：
 - `tproxy` inbound：Windows 不支持透明代理
 - `routing_mark`：Linux 特有的路由标记功能
 - `route.default_mark`：依赖 routing_mark 的配置
+
+**新特性（sing-box 1.14.0+）**：
+- ✅ 使用 `http_client` 替代已废弃的 `download_detour`
+- ✅ 符合 sing-box 1.16.0+ 要求（download_detour 将被移除）
 
 **启动方式**：
 
