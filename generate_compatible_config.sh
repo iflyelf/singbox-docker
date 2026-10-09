@@ -193,7 +193,6 @@ jq '
               "tag": "dns-direct",
               "server": "dns.alidns.com",
               "server_port": 443,
-              "detour": "🎯 全球直连",
               "domain_resolver": "dns-system"
             },
             {
@@ -201,7 +200,6 @@ jq '
               "tag": "dns-direct-backup",
               "server": "doh.pub",
               "server_port": 443,
-              "detour": "🎯 全球直连",
               "domain_resolver": "dns-system"
             },
             {
