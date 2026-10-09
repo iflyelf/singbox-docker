@@ -55,6 +55,22 @@ iflyelf/singbox-client:latest
 
 ## 快速开始
 
+### 0. 克隆项目
+
+**国内推荐使用加速镜像**：
+
+```bash
+git clone https://gh-proxy.xiaonuo.live/github.com/iflyelf/singbox-docker
+cd singbox-docker
+```
+
+**或直接从 GitHub 克隆**：
+
+```bash
+git clone https://github.com/iflyelf/singbox-docker.git
+cd singbox-docker
+```
+
 ### 1. 启动客户端
 
 ```bash
@@ -310,6 +326,22 @@ docker logs -f singbox-client
 - 服务端监控和日志管理
 
 ## 服务端快速开始
+
+### 0. 克隆项目
+
+**国内推荐使用加速镜像**：
+
+```bash
+git clone https://gh-proxy.xiaonuo.live/github.com/iflyelf/singbox-docker
+cd singbox-docker
+```
+
+**或直接从 GitHub 克隆**：
+
+```bash
+git clone https://github.com/iflyelf/singbox-docker.git
+cd singbox-docker
+```
 
 ### 1. 部署服务端
 
