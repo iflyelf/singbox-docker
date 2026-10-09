@@ -202,14 +202,25 @@ jq '
             },
             {
               "type": "udp",
+              "tag": "dns-intranet",
+              "server": "10.0.9.60",
+              "server_port": 53,
+              "detour": "direct"
+            },
+            {
+              "type": "udp",
               "tag": "dns-block",
               "server": "0.0.0.0"
             }
           ],
           "rules": [
             {
-              "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home", ".iflytek.com"],
+              "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
               "server": "dns-local"
+            },
+            {
+              "domain_suffix": [".iflytek.com"],
+              "server": "dns-intranet"
             },
             {
               "clash_mode": "Direct",
