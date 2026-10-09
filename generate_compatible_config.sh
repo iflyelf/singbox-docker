@@ -29,7 +29,8 @@ echo "正在转换配置..."
 # 3. 移除所有 routing_mark 字段
 # 4. 移除 route.default_mark 字段
 # 5. 移除不兼容的 inbound (tproxy)
-# 6. 为 TUN inbound 添加 platform.http_proxy 配置
+# 6. 添加 TUN inbound（如果不存在）
+# 7. 为 TUN inbound 添加 platform.http_proxy 配置
 jq '
   # 1. 确保 http_clients 存在
   if .http_clients == null or (.http_clients | length == 0) then
@@ -69,9 +70,29 @@ jq '
       .inbounds |= map(select(.type != "tproxy"))
     else . end
   
-  # 7. 为 TUN inbound 添加 platform.http_proxy 配置
+  # 7. 添加 TUN inbound（如果不存在）并配置 platform.http_proxy
   | (.inbounds // [] | map(select(.type == "mixed")) | .[0].listen_port // 7890) as $proxy_port
-  | if .inbounds then
+  | if (.inbounds // [] | map(select(.type == "tun")) | length == 0) then
+      # 不存在 TUN，添加新的
+      .inbounds += [{
+        "type": "tun",
+        "tag": "tun-in",
+        "sniff": true,
+        "sniff_override_destination": false,
+        "mtu": 9000,
+        "address": ["172.19.0.1/30"],
+        "auto_route": true,
+        "strict_route": false,
+        "platform": {
+          "http_proxy": {
+            "enabled": true,
+            "server": "127.0.0.1",
+            "server_port": $proxy_port
+          }
+        }
+      }]
+    else
+      # 已存在 TUN，为其添加 platform.http_proxy（如果没有）
       .inbounds |= map(
         if .type == "tun" then
           if .platform.http_proxy.enabled == null then
@@ -83,7 +104,7 @@ jq '
           else . end
         else . end
       )
-    else . end
+    end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
@@ -106,7 +127,7 @@ echo ""
 echo "兼容性适配："
 echo "  ✓ 已添加 http_clients 配置（direct-http）"
 echo "  ✓ 已为远程 rule-set 添加 http_client（替代废弃的 download_detour）"
-echo "  ✓ 已为 TUN inbound 添加 platform.http_proxy 配置"
+echo "  ✓ 已添加 TUN inbound 并配置 platform.http_proxy"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
