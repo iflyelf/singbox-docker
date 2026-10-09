@@ -27,6 +27,7 @@ echo "正在转换配置..."
 # 1. 为所有远程 rule-set 添加 download_detour
 # 2. 移除所有 routing_mark 字段
 # 3. 移除 route.default_mark 字段
+# 4. 移除不兼容的 inbound (tproxy)
 jq '
   # 1. 为远程 rule-set 添加 download_detour
   if .route.rule_set then
@@ -53,6 +54,11 @@ jq '
   | if .route.rules then
       .route.rules |= map(del(.routing_mark))
     else . end
+  
+  # 5. 移除不兼容的 inbound (tproxy 在 Windows 不支持)
+  | if .inbounds then
+      .inbounds |= map(select(.type != "tproxy"))
+    else . end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
 # 验证生成的配置
@@ -76,9 +82,10 @@ echo "兼容性适配："
 echo "  ✓ 已添加 download_detour 到所有远程 rule-set"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
+echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
 echo ""
 echo "适用平台："
-echo "  • Windows (解决 routing_mark 和 download_detour 问题)"
+echo "  • Windows (解决 routing_mark, download_detour, tproxy 问题)"
 echo "  • macOS (跨平台兼容)"
 echo "  • 其他需要显式 download_detour 的环境"
 echo ""
