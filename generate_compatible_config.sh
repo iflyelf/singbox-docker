@@ -145,6 +145,25 @@ jq '
       else . end
     else . end
   
+  # 8.5 为 mixed inbound 添加 sniff action（用于域名嗅探，避免重复添加）
+  | if (.inbounds // [] | map(select(.type == "mixed")) | length > 0) then
+      (.inbounds | map(select(.type == "mixed")) | .[0].tag) as $mixed_tag |
+      # 确保 route.rules 存在
+      if .route.rules == null then
+        .route.rules = []
+      else . end |
+      # 检查是否已有针对 mixed-in 的 sniff rule
+      if ([.route.rules[] | select(.inbound != null and .inbound[0] == $mixed_tag and .action == "sniff")] | length == 0) then
+        # 在规则列表开头添加 sniff 规则
+        .route.rules = [
+          {
+            "inbound": [$mixed_tag],
+            "action": "sniff"
+          }
+        ] + .route.rules
+      else . end
+    else . end
+  
   # 9. 为 TUN 模式添加 DNS 配置（如果不存在）
   | if (.inbounds // [] | map(select(.type == "tun")) | length > 0) then
       if .dns == null then
