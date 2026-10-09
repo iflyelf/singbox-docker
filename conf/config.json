@@ -998,6 +998,10 @@
       "tag": "🎯 全球直连"
     },
     {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
       "type": "block",
       "tag": "🛑 广告拦截"
     }
@@ -1005,7 +1009,7 @@
   "http_clients": [
     {
       "tag": "direct-http",
-      "detour": "🎯 全球直连"
+      "detour": "direct"
     }
   ],
   "route": {
