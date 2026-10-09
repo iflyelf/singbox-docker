@@ -9,6 +9,13 @@ __pycache__/
 conf/*.backup
 conf/compatible-config.json
 
+# 测试配置文件
+conf/test-*.json
+
+# sing-box 运行时文件
+cache.db
+*.db
+
 # 容器运行时生成的配置
 runtime/*
 !runtime/.gitkeep
