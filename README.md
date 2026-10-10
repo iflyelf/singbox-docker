@@ -228,8 +228,10 @@ SUBSCRIPTION_UPDATE_INTERVAL='3600'
 | `API_SERVICE_PORT` | sing-box API 服务端口 | `9191` |
 | `API_SERVICE_SECRET` | sing-box API 服务访问密码 | `@admin123` |
 | `ROUTING_MARK` | 覆盖所有已含 `routing_mark` 字段的出站（策略路由打标） | `100` |
+| `ZASHBOARD_PORT` | zashboard（nginx）监听端口 | `9898` |
 
-- 这些覆盖仅在**通过订阅模板生成配置**的流程中生效（即设置了 `SUBSCRIPTION_URL*` 时）。若容器回退到静态挂载的 `conf/config.json`，不会应用这些变量。
+- 除 `ZASHBOARD_PORT` 外，上述覆盖仅在**通过订阅模板生成配置**的流程中生效（即设置了 `SUBSCRIPTION_URL*` 时）。若容器回退到静态挂载的 `conf/config.json`，不会应用这些变量。
+- `ZASHBOARD_PORT` 作用于 nginx vhost 配置，在容器启动时改写监听端口，不依赖订阅流程，始终生效。
 - 端口与 `ROUTING_MARK` 必须为整数，值无效时会打印警告并忽略该项。
 - `secret` 在日志中以 `******` 脱敏显示。
 - 入站覆盖按 `type` 匹配模板中的入站（mixed / socks / tproxy），而非按 tag。
@@ -253,6 +255,9 @@ API_SERVICE_SECRET='your-strong-secret'
 
 # 自定义 routing_mark
 ROUTING_MARK='200'
+
+# 自定义 zashboard（nginx）监听端口
+ZASHBOARD_PORT='18898'
 ```
 
 **组名称（Tag）作用**：
@@ -400,9 +405,9 @@ export SUBSCRIPTION_TAG_1='myairport'
 
 | 服务 | 地址 | 用途 |
 |------|------|------|
-| zashboard | `http://<服务器IP>:9898` | 通过 Clash API 管理节点 |
-| Clash API | `http://<服务器IP>:9090` | 节点切换、延迟测试、连接管理 |
-| sing-box API | `http://<服务器IP>:9191` | 原生 gRPC/gRPC-Web API |
+| zashboard | `http://<服务器IP>:9898` | 通过 Clash API 管理节点（端口可用 `ZASHBOARD_PORT` 自定义） |
+| Clash API | `http://<服务器IP>:9090` | 节点切换、延迟测试、连接管理（可用 `CLASH_API_*` 自定义） |
+| sing-box API | `http://<服务器IP>:9191` | 原生 gRPC/gRPC-Web API（可用 `API_SERVICE_*` 自定义） |
 
 默认 API 密钥：
 
@@ -419,14 +424,14 @@ zashboard 首次打开后填写：
 
 ## 代理端口
 
-| 端口 | 类型 |
-|------|------|
-| `7890` | Mixed（HTTP + SOCKS5） |
-| `7891` | SOCKS5 |
-| `7893` | TProxy |
-| `9090` | Clash API |
-| `9191` | sing-box API |
-| `9898` | zashboard |
+| 端口 | 类型 | 自定义环境变量 |
+|------|------|----------------|
+| `7890` | Mixed（HTTP + SOCKS5） | `MIXED_PORT` / `MIXED_LISTEN` |
+| `7891` | SOCKS5 | `SOCKS_PORT` / `SOCKS_LISTEN` |
+| `7893` | TProxy | `TPROXY_PORT` / `TPROXY_LISTEN` |
+| `9090` | Clash API | `CLASH_API_EXTERNAL_CONTROLLER` |
+| `9191` | sing-box API | `API_SERVICE_PORT` / `API_SERVICE_LISTEN` |
+| `9898` | zashboard | `ZASHBOARD_PORT` |
 
 ## 性能优化
 

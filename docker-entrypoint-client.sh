@@ -72,6 +72,30 @@ reload_singbox() {
     fi
 }
 
+# 根据环境变量 ZASHBOARD_PORT 覆盖 nginx (zashboard) 监听端口
+# 不设置时沿用 vhost 配置中的默认端口 9898
+override_nginx_port() {
+    local vhost="/data/nginx/conf/vhost/default.conf"
+    local port="${ZASHBOARD_PORT:-}"
+
+    if [[ -z "${port}" ]]; then
+        return 0
+    fi
+
+    if ! [[ "${port}" =~ ^[0-9]+$ ]] || (( port < 1 || port > 65535 )); then
+        echo "⚠️ ZASHBOARD_PORT 值无效，已忽略: ${port}"
+        return 0
+    fi
+
+    if [[ ! -f "${vhost}" ]]; then
+        echo "⚠️ 未找到 nginx vhost 配置，跳过端口覆盖: ${vhost}"
+        return 0
+    fi
+
+    sed -i -E "s/(listen[^0-9]*)[0-9]+;/\1${port};/" "${vhost}"
+    echo "✓ 已覆盖 zashboard (nginx) 监听端口: ${port}"
+}
+
 # 订阅自动更新后台任务
 auto_update_subscription() {
     local interval="${AUTO_UPDATE_INTERVAL}"
@@ -125,7 +149,8 @@ echo "使用配置: ${CONFIG_FILE}"
 singbox_pid=$!
 echo "sing-box 已启动，PID: ${singbox_pid}"
 
-# 启动 nginx
+# 启动 nginx（按需覆盖 zashboard 监听端口）
+override_nginx_port
 nginx -p /data/nginx -c /data/nginx/conf/nginx.conf -g 'daemon off;' &
 nginx_pid=$!
 echo "nginx 已启动，PID: ${nginx_pid}"
