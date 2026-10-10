@@ -165,20 +165,20 @@ nano .env
 **.env 文件示例**：
 
 ```bash
-# Subscription source 1
+# 订阅源 1
 SUBSCRIPTION_URL_1='https://example1.com/subscription'
 SUBSCRIPTION_TAG_1='66jc'
 SUBSCRIPTION_ENABLED_1='true'
 
-# Subscription source 2
+# 订阅源 2
 SUBSCRIPTION_URL_2='https://example2.com/subscription'
 SUBSCRIPTION_TAG_2='yiyuan'
 SUBSCRIPTION_ENABLED_2='true'
 
-# Auto-update configuration
-# Enable auto-update: true or false
+# 自动更新配置
+# 是否启用自动更新：true 或 false
 SUBSCRIPTION_AUTO_UPDATE='true'
-# Update interval in seconds, 3600 = 1 hour
+# 更新间隔（秒），3600 = 1 小时
 SUBSCRIPTION_UPDATE_INTERVAL='3600'
 ```
 
@@ -271,22 +271,7 @@ ROUTING_MARK='200'
 
 容器启动时自动检测环境变量，拉取订阅并生成运行配置。**支持订阅自动更新和热重载**（无需重启容器）。
 
-**.env 配置示例**：
-
-```bash
-# 订阅源配置
-SUBSCRIPTION_URL_1='https://example1.com/subscription'
-SUBSCRIPTION_TAG_1='66jc'
-SUBSCRIPTION_ENABLED_1='true'
-
-SUBSCRIPTION_URL_2='https://example2.com/subscription'
-SUBSCRIPTION_TAG_2='yiyuan'
-SUBSCRIPTION_ENABLED_2='true'
-
-# 自动更新配置
-SUBSCRIPTION_AUTO_UPDATE='true'         # 启用自动更新
-SUBSCRIPTION_UPDATE_INTERVAL='3600'     # 更新间隔（秒），3600 = 1小时
-```
+`.env` 文件内容与[方式 1](#方式-1-通过-env-文件推荐)相同，参见上文的环境变量说明与示例。容器会通过 `env_file` 读取这些变量。
 
 **docker-compose-client.yml**：
 
