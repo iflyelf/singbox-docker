@@ -1163,6 +1163,8 @@ class ConfigManager:
             for region, pattern in REGION_PATTERNS.items():
                 if re.search(pattern, orig_name):
                     region_map[region].append(tag)
+                    # 同步填充自动测速组（🛺 变体），与手动选择组节点一致
+                    region_map[f'{region}🛺'].append(tag)
                     matched = True
             
             if matched:
@@ -1172,6 +1174,8 @@ class ConfigManager:
         other_tags = [p['tag'] for p in proxies if p['tag'] not in matched_tags and not re.search(EXCLUDE_PATTERN, p['tag'])]
         if other_tags:
             region_map['🚞 其它地区'] = other_tags
+            # 同步填充自动测速组（🛺 变体）
+            region_map['🚞 其它地区🛺'] = other_tags
         
         # "全部节点" 包含所有非排除节点
         all_tags = [p['tag'] for p in proxies if not re.search(EXCLUDE_PATTERN, p['tag'])]
