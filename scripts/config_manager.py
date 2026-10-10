@@ -71,7 +71,139 @@ class ConfigManager:
             print(f"⚠️ 检测到旧的环境变量命名: {', '.join(old_vars[:3])}")
             print("   请改用 SUBSCRIPTION_URL_N, SUBSCRIPTION_TAG_N, SUBSCRIPTION_ENABLED_N")
         
+        # 应用环境变量覆盖（inbounds / clash_api / api service / routing_mark）
+        self._apply_env_overrides()
+        
         return self.config
+    
+    def _apply_env_overrides(self):
+        """根据环境变量覆盖模板中的入站端口、监听地址、Clash API、API 服务及 routing_mark"""
+        self._override_inbounds()
+        self._override_clash_api()
+        self._override_api_service()
+        self._override_routing_mark()
+    
+    def _override_inbounds(self):
+        """覆盖入站监听地址和端口
+        
+        支持的环境变量（按入站 type 匹配）：
+          MIXED_LISTEN / MIXED_PORT          -> type=mixed 入站
+          SOCKS_LISTEN / SOCKS_PORT          -> type=socks 入站
+          TPROXY_LISTEN / TPROXY_PORT        -> type=tproxy 入站
+        """
+        inbounds = self.config.get('inbounds')
+        if not isinstance(inbounds, list):
+            return
+        
+        # type -> 环境变量前缀
+        prefix_map = {
+            'mixed': 'MIXED',
+            'socks': 'SOCKS',
+            'tproxy': 'TPROXY',
+        }
+        
+        for inbound in inbounds:
+            itype = inbound.get('type')
+            prefix = prefix_map.get(itype)
+            if not prefix:
+                continue
+            
+            listen = os.environ.get(f'{prefix}_LISTEN', '').strip()
+            if listen:
+                inbound['listen'] = listen
+                print(f"  覆盖入站 [{itype}] 监听地址: {listen}")
+            
+            port = os.environ.get(f'{prefix}_PORT', '').strip()
+            if port:
+                try:
+                    inbound['listen_port'] = int(port)
+                    print(f"  覆盖入站 [{itype}] 端口: {port}")
+                except ValueError:
+                    print(f"  ⚠️ 入站 [{itype}] 端口值无效，已忽略: {port}")
+    
+    def _override_clash_api(self):
+        """覆盖 experimental.clash_api 的 external_controller 和 secret
+        
+        支持的环境变量：
+          CLASH_API_EXTERNAL_CONTROLLER   -> external_controller 监听地址（如 0.0.0.0:9090）
+          CLASH_API_SECRET                -> secret 访问密码
+        """
+        controller = os.environ.get('CLASH_API_EXTERNAL_CONTROLLER', '').strip()
+        secret = os.environ.get('CLASH_API_SECRET', '').strip()
+        
+        if not controller and not secret:
+            return
+        
+        experimental = self.config.setdefault('experimental', {})
+        clash_api = experimental.setdefault('clash_api', {})
+        
+        if controller:
+            clash_api['external_controller'] = controller
+            print(f"  覆盖 clash_api external_controller: {controller}")
+        if secret:
+            clash_api['secret'] = secret
+            print("  覆盖 clash_api secret: ******")
+    
+    def _override_api_service(self):
+        """覆盖 services 中 type=api 服务的 listen / listen_port / secret
+        
+        支持的环境变量：
+          API_SERVICE_LISTEN   -> 监听地址
+          API_SERVICE_PORT     -> 监听端口
+          API_SERVICE_SECRET   -> 访问密码
+        """
+        listen = os.environ.get('API_SERVICE_LISTEN', '').strip()
+        port = os.environ.get('API_SERVICE_PORT', '').strip()
+        secret = os.environ.get('API_SERVICE_SECRET', '').strip()
+        
+        if not listen and not port and not secret:
+            return
+        
+        services = self.config.get('services')
+        if not isinstance(services, list):
+            return
+        
+        for service in services:
+            if service.get('type') != 'api':
+                continue
+            
+            if listen:
+                service['listen'] = listen
+                print(f"  覆盖 api 服务监听地址: {listen}")
+            if port:
+                try:
+                    service['listen_port'] = int(port)
+                    print(f"  覆盖 api 服务端口: {port}")
+                except ValueError:
+                    print(f"  ⚠️ api 服务端口值无效，已忽略: {port}")
+            if secret:
+                service['secret'] = secret
+                print("  覆盖 api 服务 secret: ******")
+    
+    def _override_routing_mark(self):
+        """覆盖出站的 routing_mark
+        
+        支持的环境变量：
+          ROUTING_MARK   -> 作用于所有已含 routing_mark 字段的出站
+        """
+        mark = os.environ.get('ROUTING_MARK', '').strip()
+        if not mark:
+            return
+        
+        try:
+            mark_val = int(mark)
+        except ValueError:
+            print(f"  ⚠️ ROUTING_MARK 值无效，已忽略: {mark}")
+            return
+        
+        outbounds = self.config.get('outbounds')
+        if not isinstance(outbounds, list):
+            return
+        
+        for outbound in outbounds:
+            if 'routing_mark' in outbound:
+                outbound['routing_mark'] = mark_val
+                print(f"  覆盖出站 [{outbound.get('tag')}] routing_mark: {mark_val}")
     
     def _load_sources_from_env(self) -> List[Dict]:
         """从环境变量加载订阅源"""

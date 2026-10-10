@@ -210,6 +210,51 @@ SUBSCRIPTION_UPDATE_INTERVAL='3600'
 - `enabled` 可选值：`true`/`1`/`yes`/`on` 或 `false`/`0`/`no`/`off`
 - 自动更新功能：容器内定时拉取订阅并热重载配置（不重启容器）
 
+**高级配置：覆盖监听端口、Clash API、API 服务与 routing_mark**
+
+除订阅相关变量外，还可以通过环境变量覆盖模板（`config_with_sub.json`）中的入站、Clash API、API 服务及 routing_mark。这些变量均为**可选**，不设置时沿用模板默认值。
+
+| 环境变量 | 说明 | 默认值（模板） |
+|---------|------|----------------|
+| `MIXED_LISTEN` | mixed 入站（HTTP + SOCKS 混合代理）监听地址 | `::` |
+| `MIXED_PORT` | mixed 入站端口 | `7890` |
+| `SOCKS_LISTEN` | socks 入站监听地址 | `::` |
+| `SOCKS_PORT` | socks 入站端口 | `7891` |
+| `TPROXY_LISTEN` | tproxy 入站（透明代理）监听地址 | `::` |
+| `TPROXY_PORT` | tproxy 入站端口 | `7893` |
+| `CLASH_API_EXTERNAL_CONTROLLER` | Clash API 外部控制器监听地址（`host:port`） | `0.0.0.0:9090` |
+| `CLASH_API_SECRET` | Clash API 访问密码 | `@admin123` |
+| `API_SERVICE_LISTEN` | sing-box API 服务监听地址 | `0.0.0.0` |
+| `API_SERVICE_PORT` | sing-box API 服务端口 | `9191` |
+| `API_SERVICE_SECRET` | sing-box API 服务访问密码 | `@admin123` |
+| `ROUTING_MARK` | 覆盖所有已含 `routing_mark` 字段的出站（策略路由打标） | `100` |
+
+- 这些覆盖仅在**通过订阅模板生成配置**的流程中生效（即设置了 `SUBSCRIPTION_URL*` 时）。若容器回退到静态挂载的 `conf/config.json`，不会应用这些变量。
+- 端口与 `ROUTING_MARK` 必须为整数，值无效时会打印警告并忽略该项。
+- `secret` 在日志中以 `******` 脱敏显示。
+- 入站覆盖按 `type` 匹配模板中的入站（mixed / socks / tproxy），而非按 tag。
+
+`.env` 配置示例：
+
+```bash
+# 自定义入站端口
+MIXED_PORT='17890'
+SOCKS_PORT='17891'
+TPROXY_PORT='17893'
+
+# 自定义 Clash API
+CLASH_API_EXTERNAL_CONTROLLER='0.0.0.0:19090'
+CLASH_API_SECRET='your-strong-secret'
+
+# 自定义 sing-box API 服务
+API_SERVICE_LISTEN='0.0.0.0'
+API_SERVICE_PORT='19191'
+API_SERVICE_SECRET='your-strong-secret'
+
+# 自定义 routing_mark
+ROUTING_MARK='200'
+```
+
 **组名称（Tag）作用**：
 
 每个订阅源会生成独立的分组，便于管理和切换：
