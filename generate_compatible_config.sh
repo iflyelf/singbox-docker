@@ -66,6 +66,17 @@ jq '
       .route.rules |= map(del(.routing_mark))
     else . end
   
+  # 5.5. 移除 IPv6 拦截规则和端口 7892/7893 拦截规则
+  | if .route.rules then
+      .route.rules |= map(select(
+        # 保留不是 IPv6 拦截的规则
+        (.ip_version != 6 or .outbound != "🛑 广告拦截")
+        and
+        # 保留不是端口 7892/7893 拦截的规则
+        (.port == null or (.port | tostring | contains("7892") | not) or .outbound != "🛑 广告拦截")
+      ))
+    else . end
+  
   # 6. 移除不兼容的 inbound (tproxy 在 Windows 不支持)
   | if .inbounds then
       .inbounds |= map(select(.type != "tproxy"))
@@ -371,6 +382,8 @@ echo "  ✓ 已移除废弃的 outbound DNS 规则项"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
+echo "  ✓ 已移除 IPv6 拦截规则（支持国内运营商 IPv6 网络）"
+echo "  ✓ 已移除端口 7892/7893 拦截规则"
 echo ""
 echo "DNS 优化说明："
 echo "  • Fake IP: 使用虚拟 IP 池避免真实 DNS 解析延迟"
