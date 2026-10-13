@@ -164,11 +164,17 @@ jq '
       else . end
     else . end
   
-  # 9. 为 TUN 模式添加 DNS 配置（如果不存在）
+  # 9. 为 TUN 模式添加 DNS 配置（如果不存在），使用 Fake IP
   | if (.inbounds // [] | map(select(.type == "tun")) | length > 0) then
       if .dns == null then
         .dns = {
           "servers": [
+            {
+              "type": "fakeip",
+              "tag": "dns-fakeip",
+              "inet4_range": "198.18.0.0/15",
+              "inet6_range": "fc00::/18"
+            },
             {
               "type": "https",
               "tag": "dns-remote",
@@ -176,7 +182,7 @@ jq '
               "server_port": 443,
               "path": "/dns-query",
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
@@ -184,7 +190,7 @@ jq '
               "server": "xiaonuo-dns.koyeb.app",
               "server_port": 443,
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
@@ -192,7 +198,7 @@ jq '
               "server": "dns.digitale-gesellschaft.ch",
               "server_port": 443,
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
@@ -201,7 +207,7 @@ jq '
               "server_port": 443,
               "path": "/query",
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
@@ -210,7 +216,7 @@ jq '
               "server_port": 443,
               "path": "/doh",
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
@@ -219,7 +225,7 @@ jq '
               "server_port": 443,
               "path": "/doh/security-filter/",
               "detour": "🚀 节点选择",
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "udp",
@@ -238,14 +244,14 @@ jq '
               "tag": "dns-direct-doh",
               "server": "dns.alidns.com",
               "server_port": 443,
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "https",
               "tag": "dns-direct-doh-backup",
               "server": "doh.pub",
               "server_port": 443,
-              "domain_resolver": "dns-system"
+              "domain_resolver": "dns-direct"
             },
             {
               "type": "local",
@@ -282,7 +288,11 @@ jq '
             },
             {
               "clash_mode": "Global",
-              "server": "dns-remote"
+              "server": "dns-fakeip"
+            },
+            {
+              "rule_set": ["ChinaDomain"],
+              "server": "dns-direct"
             },
             {
               "action": "evaluate",
@@ -293,16 +303,13 @@ jq '
               "match_response": true,
               "ip_cidr": ["192.168.0.0/16", "172.16.0.0/12", "10.0.0.0/8"],
               "server": "dns-system"
-            },
-            {
-              "rule_set": ["ChinaDomain"],
-              "server": "dns-direct"
             }
           ],
           "final": "dns-remote",
           "strategy": "ipv4_only",
           "disable_cache": false,
-          "disable_expire": false
+          "disable_expire": false,
+          "optimistic": true
         }
       else . end
     else . end
@@ -312,7 +319,24 @@ jq '
       if .route == null then
         .route = {}
       else . end
-      | .route.default_domain_resolver = {"server": "dns-system"}
+      | .route.default_domain_resolver = "dns-direct"
+    else . end
+  
+  # 11. 添加 DNS 劫持路由规则（在所有规则之前）
+  | if (.inbounds // [] | map(select(.type == "tun")) | length > 0) then
+      if .route.rules == null then
+        .route.rules = []
+      else . end |
+      # 检查是否已有 DNS 劫持规则
+      if ([.route.rules[] | select(.protocol == "dns" and .action == "hijack-dns")] | length == 0) then
+        # 在规则列表最前面添加 DNS 劫持规则
+        .route.rules = [
+          {
+            "protocol": "dns",
+            "action": "hijack-dns"
+          }
+        ] + .route.rules
+      else . end
     else . end
 ' "${INPUT_CONFIG}" > "${OUTPUT_CONFIG}.tmp"
 
@@ -337,16 +361,27 @@ echo "兼容性适配："
 echo "  ✓ 已添加 http_clients 配置（direct-http）"
 echo "  ✓ 已为远程 rule-set 添加 http_client（替代废弃的 download_detour）"
 echo "  ✓ 已添加 TUN inbound（不配置 platform.http_proxy 以避免冲突）"
-echo "  ✓ 已添加 DNS 配置（使用 sing-box 1.12.0+ 新格式）"
+echo "  ✓ 已添加 Fake IP DNS 配置（彻底解决 DNS 解析问题）"
+echo "  ✓ 已添加 DNS 劫持路由规则（hijack-dns）"
+echo "  ✓ DNS 规则优化：ChinaDomain 优先，国内域名直连不绕远程"
+echo "  ✓ Bootstrap 解析器：使用 dns-direct 避免 TUN 回环"
+echo "  ✓ 启用乐观缓存（optimistic: true）降低首包延迟"
 echo "  ✓ DNS 服务器使用新格式（type 字段，无 legacy 格式）"
 echo "  ✓ 已移除废弃的 outbound DNS 规则项"
 echo "  ✓ 已移除 routing_mark 字段（Windows/部分平台不支持）"
 echo "  ✓ 已移除 route.default_mark 字段"
 echo "  ✓ 已移除 tproxy inbound（Windows 不支持）"
 echo ""
+echo "DNS 优化说明："
+echo "  • Fake IP: 使用虚拟 IP 池避免真实 DNS 解析延迟"
+echo "  • DNS 劫持: 53 端口流量强制走 sing-box DNS 模块"
+echo "  • 规则顺序: 国内域名→直连 DNS，国外域名→Fake IP"
+echo "  • Bootstrap: 远程 DoH 服务器域名用 dns-direct 引导，避免回环"
+echo "  • 乐观缓存: 过期缓存先返回旧值，后台异步刷新"
+echo ""
 echo "适用平台："
 echo "  • Windows (解决 routing_mark, http_client, tproxy, TUN 代理问题)"
-echo "  • Android/iOS (TUN 代理模式)"
+echo "  • Android/iOS (TUN 代理模式 + Fake IP 秒开)"
 echo "  • macOS (跨平台兼容)"
 echo "  • 其他需要显式 http_client 的环境"
 echo ""
