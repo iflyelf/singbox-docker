@@ -111,7 +111,7 @@ jq '
           {
             "inbound": [$tun_tag],
             "action": "resolve",
-            "strategy": "ipv4_only"
+            "strategy": "prefer_ipv4"
           },
           {
             "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home", ".iflytek.com"],
@@ -306,7 +306,7 @@ jq '
             }
           ],
           "final": "dns-remote",
-          "strategy": "ipv4_only",
+          "strategy": "prefer_ipv4",
           "disable_cache": false,
           "disable_expire": false,
           "optimistic": true
