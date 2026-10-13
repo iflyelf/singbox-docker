@@ -1144,13 +1144,6 @@
         "outbound": "🎯 全球直连"
       },
       {
-        "port": [
-          7892,
-          7893
-        ],
-        "outbound": "🛑 广告拦截"
-      },
-      {
         "rule_set": "XiaoNuoReject",
         "outbound": "🛑 广告拦截"
       },
