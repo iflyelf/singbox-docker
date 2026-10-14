@@ -328,6 +328,9 @@ class ConfigManager:
             if 'transport' in ob:
                 ob['transport'] = self._normalize_transport(ob['transport'])
             
+            # 补齐 trojan 必需的 TLS 配置
+            ob = self._normalize_singbox_outbound(ob)
+            
             # 添加标签前缀
             name = ob.get('tag', ob.get('server', 'node'))
             ob['tag'] = f'🎉 [{tag_prefix}] {name}'
@@ -544,9 +547,18 @@ class ConfigManager:
             'password': unquote(parts.username) if parts.username else '',
         }
         
+        # trojan 始终基于 TLS（Clash 中为隐式开启）；security=none 时显式关闭
         security = query.get('security', ['tls'])[0]
-        if security != 'none':
+        if security == 'none':
+            proxy['tls'] = False
+        else:
+            proxy['tls'] = True
             proxy['sni'] = query.get('sni', [proxy['server']])[0]
+            fp = query.get('fp', [''])[0]
+            if fp:
+                proxy['client-fingerprint'] = fp
+            if query.get('allowInsecure', ['0'])[0] == '1':
+                proxy['skip-cert-verify'] = True
         
         net = query.get('type', ['tcp'])[0]
         return self._apply_network(
@@ -790,7 +802,11 @@ class ConfigManager:
         return ob
     
     def _convert_trojan(self, proxy: dict) -> Dict:
-        """trojan"""
+        """trojan
+
+        Clash 的 trojan 隐式启用 TLS（代理配置中不存在 tls 字段），
+        但 sing-box 必须显式声明 tls，否则会按明文连接导致探测失败。
+        """
         ob = {
             'type': 'trojan',
             'server': proxy['server'],
@@ -798,8 +814,12 @@ class ConfigManager:
             'password': proxy['password'],
         }
         
-        # TLS (默认启用)
-        tls = self._build_tls(proxy, False)
+        # 未显式声明 tls（且非 reality）时，按 trojan 语义强制启用 TLS
+        tls_proxy = proxy
+        if 'tls' not in proxy and 'reality-opts' not in proxy:
+            tls_proxy = {**proxy, 'tls': True}
+        
+        tls = self._build_tls(tls_proxy, False)
         if tls:
             ob['tls'] = tls
         
@@ -1106,6 +1126,29 @@ class ConfigManager:
             }
 
         return transport
+
+    def _normalize_singbox_outbound(self, ob: Dict) -> Dict:
+        """补齐 sing-box JSON 订阅中出站缺失的必需字段
+
+        trojan 必须显式声明 tls（否则按明文连接），缺失时补默认开启，
+        并用 transport 的 Host 兜底 server_name（SNI 与 Server 不一致的节点）。
+        """
+        if ob.get('type') != 'trojan' or 'reality-opts' in ob:
+            return ob
+
+        tls = ob.get('tls')
+        if tls is None:
+            tls = {'enabled': True}
+            ob['tls'] = tls
+
+        if isinstance(tls, dict) and not tls.get('server_name'):
+            transport = ob.get('transport') or {}
+            headers = transport.get('headers') or {}
+            host = headers.get('Host') or transport.get('host')
+            if host:
+                tls['server_name'] = host[0] if isinstance(host, list) else host
+
+        return ob
 
     def _parse_bandwidth(self, bw: str) -> int:
         """解析带宽值 (如 "100 Mbps" -> 100)"""

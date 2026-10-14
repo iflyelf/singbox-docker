@@ -156,6 +156,11 @@ sing-box run -c conf/compatible-config.json
 （官方默认将早期数据放在路径中发送，仅在 `max_early_data` 非 0 时生效）。
 详见：https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
 
+**TLS 兼容说明**：trojan 在 Clash 中是**隐式启用 TLS** 的（节点配置里没有 `tls` 字段），
+而 sing-box 必须显式声明 `tls`，否则会按明文连接导致节点探测失败。
+转换器会自动补上 `tls.enabled`，并保留 `sni` → `server_name`、
+`skip-cert-verify` → `insecure`、`client-fingerprint` → `utls.fingerprint` 的映射。
+
 #### 方式 1: 通过 .env 文件（推荐）
 
 创建 `.env` 文件（不要提交到 Git）：
