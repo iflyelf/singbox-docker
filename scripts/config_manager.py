@@ -47,6 +47,10 @@ EXCLUDE_PATTERN = r'(?i)公司|直连|广告|拦截|company|direct'
 # https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
 EARLY_DATA_HEADER_NAME = 'Sec-WebSocket-Protocol'
 
+# 设计上必须基于 TLS 的协议：缺失 tls 时统一补默认开启
+# （Clash 中 trojan/anytls 等为隐式 TLS，节点里没有 tls 字段）
+IMPLICIT_TLS_TYPES = {'trojan', 'hysteria', 'hysteria2', 'tuic', 'shadowtls', 'anytls'}
+
 class ConfigManager:
     def __init__(self, config_file: str):
         self.config_file = Path(config_file)
@@ -323,13 +327,6 @@ class ConfigManager:
             
             # 清理不兼容字段
             ob = {k: v for k, v in ob.items() if k not in ('detour', 'domain_strategy', 'domain_resolver')}
-            
-            # 规范化 V2Ray transport（补齐 ws 早期数据头等官方字段）
-            if 'transport' in ob:
-                ob['transport'] = self._normalize_transport(ob['transport'])
-            
-            # 补齐 trojan 必需的 TLS 配置
-            ob = self._normalize_singbox_outbound(ob)
             
             # 添加标签前缀
             name = ob.get('tag', ob.get('server', 'node'))
@@ -1125,28 +1122,62 @@ class ConfigManager:
                 ),
             }
 
+        if ttype in ('http', 'h2'):
+            # 官方结构中 http 的 host 为域名列表
+            host = transport.get('host', [])
+            if isinstance(host, str):
+                host = [host] if host else []
+            transport['host'] = host
+            transport['path'] = transport.get('path', '/') or '/'
+            return transport
+
         return transport
 
-    def _normalize_singbox_outbound(self, ob: Dict) -> Dict:
-        """补齐 sing-box JSON 订阅中出站缺失的必需字段
+    @staticmethod
+    def _transport_host(transport) -> str:
+        """取 V2Ray transport 的 Host（headers.Host 优先，其次 host，兼容列表形式）"""
+        if not isinstance(transport, dict):
+            return ''
 
-        trojan 必须显式声明 tls（否则按明文连接），缺失时补默认开启，
-        并用 transport 的 Host 兜底 server_name（SNI 与 Server 不一致的节点）。
+        headers = transport.get('headers') or {}
+        host = headers.get('Host') or transport.get('host') or ''
+        if isinstance(host, list):
+            host = host[0] if host else ''
+        return host or ''
+
+    def _normalize_outbound(self, ob: Dict) -> Dict:
+        """统一规范化所有出站（不区分协议、不区分订阅来源）
+
+        集中处理 V2Ray transport 与 TLS 的补齐，保证：
+        1. V2Ray transport（ws 等）字段完整，兼容 Xray-core
+        2. 设计上必须 TLS 的协议（trojan 等）缺失 tls 时补默认开启，
+           避免 Clash 隐式 TLS 语义在 sing-box 中变成明文连接
+        3. tls.server_name 缺失时用 transport 的 Host 兜底
+           （SNI 与 Server 不一致的节点，如 ws 的 Host 头）
+        4. reality 未配置 utls 时补默认指纹（sing-box 要求 utls）
         """
-        if ob.get('type') != 'trojan' or 'reality-opts' in ob:
-            return ob
+        ob_type = (ob.get('type') or '').lower()
+
+        # 1. V2Ray transport 规范化
+        if isinstance(ob.get('transport'), dict):
+            ob['transport'] = self._normalize_transport(ob['transport'])
+
+        # 2. 隐式 TLS 协议
+        if ob_type in IMPLICIT_TLS_TYPES and ob.get('tls') is None:
+            ob['tls'] = {'enabled': True}
 
         tls = ob.get('tls')
-        if tls is None:
-            tls = {'enabled': True}
-            ob['tls'] = tls
+        if isinstance(tls, dict):
+            # 3. server_name 兜底
+            if tls.get('enabled') and not tls.get('server_name'):
+                host = self._transport_host(ob.get('transport'))
+                if host:
+                    tls['server_name'] = host
 
-        if isinstance(tls, dict) and not tls.get('server_name'):
-            transport = ob.get('transport') or {}
-            headers = transport.get('headers') or {}
-            host = headers.get('Host') or transport.get('host')
-            if host:
-                tls['server_name'] = host[0] if isinstance(host, list) else host
+            # 4. reality 必须启用 utls
+            reality = tls.get('reality')
+            if isinstance(reality, dict) and reality.get('enabled') and not tls.get('utls'):
+                tls['utls'] = {'enabled': True, 'fingerprint': 'chrome'}
 
         return ob
 
@@ -1195,6 +1226,9 @@ class ConfigManager:
         if not all_proxies:
             print("错误: 没有可用的节点")
             return False
+        
+        # 统一规范化所有出站（不分来源/协议，集中补齐 V2Ray transport 与 TLS）
+        all_proxies = [self._normalize_outbound(p) for p in all_proxies]
         
         # 去重
         seen = set()

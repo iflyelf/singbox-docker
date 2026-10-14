@@ -150,16 +150,20 @@ sing-box run -c conf/compatible-config.json
 
 支持协议：shadowsocks, vmess, vless (含 Reality), trojan, hysteria2, tuic, anytls (shadowtls v3)
 
-**V2Ray Transport 兼容说明**：转换后的 `ws` 传输会按官方结构调整为完整字段
-（`path` / `headers` / `max_early_data` / `early_data_header_name`），其中
-`early_data_header_name` 固定为 `Sec-WebSocket-Protocol`，以兼容 Xray-core 服务端
-（官方默认将早期数据放在路径中发送，仅在 `max_early_data` 非 0 时生效）。
-详见：https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+**出站统一规范化说明**：无论订阅是 Clash YAML / sing-box JSON / 分享链接，转换后所有节点
+都会经过统一的规范化（`_normalize_outbound`），**不区分协议、不区分来源**：
 
-**TLS 兼容说明**：trojan 在 Clash 中是**隐式启用 TLS** 的（节点配置里没有 `tls` 字段），
-而 sing-box 必须显式声明 `tls`，否则会按明文连接导致节点探测失败。
-转换器会自动补上 `tls.enabled`，并保留 `sni` → `server_name`、
-`skip-cert-verify` → `insecure`、`client-fingerprint` → `utls.fingerprint` 的映射。
+- **V2Ray Transport**：`ws` 按官方结构补全 `path` / `headers` / `max_early_data` /
+  `early_data_header_name`，其中 `early_data_header_name` 固定为 `Sec-WebSocket-Protocol`
+  以兼容 Xray-core 服务端（官方默认将早期数据放在路径中发送，仅在 `max_early_data` 非 0 时生效）；
+  `http` 的 `host` 统一为列表。详见
+  https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+- **隐式 TLS 协议**：trojan / hysteria / hysteria2 / tuic / shadowtls (anytls) 在设计上必须基于 TLS，
+  但 Clash 节点中没有 `tls` 字段（隐式开启），而 sing-box 必须显式声明，否则会按明文连接
+  导致节点探测失败（实测报 `unexpected HTTP response status: 400`）。转换器会自动补上 `tls.enabled`。
+- **TLS 字段映射**：`sni` / `servername` → `server_name`（缺失时用 transport 的 `Host` 兜底，
+  适配 SNI 与 Server 不一致的节点）、`skip-cert-verify` → `insecure`、
+  `client-fingerprint` → `utls.fingerprint`；reality 未配置 utls 时补默认指纹（sing-box 强制要求）。
 
 #### 方式 1: 通过 .env 文件（推荐）
 
