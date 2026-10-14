@@ -150,6 +150,12 @@ sing-box run -c conf/compatible-config.json
 
 支持协议：shadowsocks, vmess, vless (含 Reality), trojan, hysteria2, tuic, anytls (shadowtls v3)
 
+**V2Ray Transport 兼容说明**：转换后的 `ws` 传输会按官方结构调整为完整字段
+（`path` / `headers` / `max_early_data` / `early_data_header_name`），其中
+`early_data_header_name` 固定为 `Sec-WebSocket-Protocol`，以兼容 Xray-core 服务端
+（官方默认将早期数据放在路径中发送，仅在 `max_early_data` 非 0 时生效）。
+详见：https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+
 #### 方式 1: 通过 .env 文件（推荐）
 
 创建 `.env` 文件（不要提交到 Git）：

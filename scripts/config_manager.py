@@ -42,6 +42,11 @@ INFO_NODE_PATTERN = r'(?i)剩余|流量|到期|过期|官网|套餐|重置|expir
 # 排除节点（公司、直连等）
 EXCLUDE_PATTERN = r'(?i)公司|直连|广告|拦截|company|direct'
 
+# V2Ray Transport（ws）早期数据头名称
+# 官方文档：默认情况下早期数据在路径中发送；为兼容 Xray-core 需固定为 Sec-WebSocket-Protocol
+# https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+EARLY_DATA_HEADER_NAME = 'Sec-WebSocket-Protocol'
+
 class ConfigManager:
     def __init__(self, config_file: str):
         self.config_file = Path(config_file)
@@ -319,6 +324,10 @@ class ConfigManager:
             # 清理不兼容字段
             ob = {k: v for k, v in ob.items() if k not in ('detour', 'domain_strategy', 'domain_resolver')}
             
+            # 规范化 V2Ray transport（补齐 ws 早期数据头等官方字段）
+            if 'transport' in ob:
+                ob['transport'] = self._normalize_transport(ob['transport'])
+            
             # 添加标签前缀
             name = ob.get('tag', ob.get('server', 'node'))
             ob['tag'] = f'🎉 [{tag_prefix}] {name}'
@@ -417,6 +426,33 @@ class ConfigManager:
         
         return None
     
+    def _apply_network(self, proxy: dict, net: str, path: str = '/',
+                       host: str = '', service_name: str = '') -> dict:
+        """按官方 V2Ray Transport 结构填充 network 相关字段
+
+        仅暂存 Clash 风格的 *-opts，随后由 _build_transport 转换为 sing-box transport。
+        参考：https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+        """
+        net = (net or 'tcp').lower()
+        if net and net != 'tcp':
+            proxy['network'] = net
+
+        host = host or proxy.get('server', '')
+
+        if net == 'ws':
+            proxy['ws-opts'] = {
+                'path': path or '/',
+                'headers': {'Host': host} if host else {},
+            }
+        elif net == 'httpupgrade':
+            proxy['httpupgrade-opts'] = {'path': path or '/', 'host': host}
+        elif net == 'grpc':
+            proxy['grpc-opts'] = {'grpc-service-name': service_name or ''}
+        elif net in ('h2', 'http'):
+            proxy['h2-opts'] = {'host': [host] if host else [], 'path': path or '/'}
+
+        return proxy
+
     def _parse_vmess_uri(self, uri: str) -> Optional[Dict]:
         """解析 vmess:// URI"""
         body = uri.split('://')[1]
@@ -441,20 +477,13 @@ class ConfigManager:
                 proxy['client-fingerprint'] = data.get('fp')
         
         net = proxy['network']
-        if net == 'ws':
-            proxy['ws-opts'] = {
-                'path': data.get('path', '/'),
-                'headers': {'Host': data.get('host', proxy['server'])}
-            }
-        elif net == 'grpc':
-            proxy['grpc-opts'] = {'grpc-service-name': data.get('path', '')}
-        elif net == 'h2':
-            proxy['h2-opts'] = {
-                'host': [data.get('host', proxy['server'])],
-                'path': data.get('path', '/')
-            }
-        
-        return proxy
+        return self._apply_network(
+            proxy,
+            net=net,
+            path=data.get('path', '/'),
+            host=data.get('host', ''),
+            service_name=data.get('path', ''),
+        )
     
     def _parse_vless_uri(self, uri: str) -> Optional[Dict]:
         """解析 vless:// URI"""
@@ -494,17 +523,13 @@ class ConfigManager:
                     proxy['reality-opts']['short-id'] = sid
         
         net = query.get('type', ['tcp'])[0]
-        proxy['network'] = net
-        
-        if net == 'ws':
-            proxy['ws-opts'] = {
-                'path': query.get('path', ['/'])[0],
-                'headers': {'Host': query.get('host', [proxy['server']])[0]}
-            }
-        elif net == 'grpc':
-            proxy['grpc-opts'] = {'grpc-service-name': query.get('serviceName', [''])[0]}
-        
-        return proxy
+        return self._apply_network(
+            proxy,
+            net=net,
+            path=query.get('path', ['/'])[0],
+            host=query.get('host', [''])[0],
+            service_name=query.get('serviceName', [''])[0],
+        )
     
     def _parse_trojan_uri(self, uri: str) -> Optional[Dict]:
         """解析 trojan:// URI"""
@@ -524,15 +549,13 @@ class ConfigManager:
             proxy['sni'] = query.get('sni', [proxy['server']])[0]
         
         net = query.get('type', ['tcp'])[0]
-        if net != 'tcp':
-            proxy['network'] = net
-            if net == 'ws':
-                proxy['ws-opts'] = {
-                    'path': query.get('path', ['/'])[0],
-                    'headers': {'Host': query.get('host', [proxy['server']])[0]}
-                }
-        
-        return proxy
+        return self._apply_network(
+            proxy,
+            net=net,
+            path=query.get('path', ['/'])[0],
+            host=query.get('host', [''])[0],
+            service_name=query.get('serviceName', [''])[0],
+        )
     
     def _parse_ss_uri(self, uri: str) -> Optional[Dict]:
         """解析 ss:// URI"""
@@ -925,6 +948,14 @@ class ConfigManager:
         sni = proxy.get('servername') or proxy.get('sni')
         if not sni and proxy.get('ws-opts'):
             sni = proxy['ws-opts'].get('headers', {}).get('Host')
+        if not sni and proxy.get('httpupgrade-opts'):
+            sni = proxy['httpupgrade-opts'].get('host')
+        if not sni and proxy.get('h2-opts'):
+            host = proxy['h2-opts'].get('host')
+            if isinstance(host, list) and host:
+                sni = host[0]
+            elif isinstance(host, str):
+                sni = host
         if not sni:
             sni = proxy.get('server')
         if sni:
@@ -958,62 +989,124 @@ class ConfigManager:
         
         return tls
     
+    def _extract_early_data(self, path: str) -> Tuple[str, int]:
+        """从 ws 路径中解析 early-data (?ed=2048)
+
+        返回 (去掉 ed 参数的路径, 允许的早期数据大小)。
+        参考官方 V2Ray Transport 文档：
+        https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+        """
+        max_early_data = 0
+        if '?' not in path:
+            return path, max_early_data
+
+        base, _, query = path.partition('?')
+        kept = []
+        for part in query.split('&'):
+            if part.startswith('ed='):
+                try:
+                    max_early_data = int(part.split('=', 1)[1])
+                except ValueError:
+                    pass
+            elif part:
+                kept.append(part)
+
+        path = f"{base}?{'&'.join(kept)}" if kept else base
+        return path, max_early_data
+
     def _build_transport(self, proxy: dict) -> Optional[Dict]:
-        """构建 transport 配置"""
-        net = proxy.get('network', 'tcp')
-        
+        """构建 V2Ray Transport 配置
+
+        按官方结构输出，参考：
+        https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+        """
+        net = (proxy.get('network') or 'tcp').lower()
+
         if net == 'ws':
-            ws_opts = proxy.get('ws-opts', {})
-            path = ws_opts.get('path', '/')
-            
-            # 处理 early-data (?ed=2048)
-            max_early_data = 0
-            if '?ed=' in path:
-                path, query = path.split('?', 1)
-                for part in query.split('&'):
-                    if part.startswith('ed='):
-                        try:
-                            max_early_data = int(part.split('=')[1])
-                        except:
-                            pass
-            
-            transport = {
+            ws_opts = proxy.get('ws-opts') or {}
+            path = ws_opts.get('path', '/') or '/'
+            path, max_early_data = self._extract_early_data(path)
+
+            # 官方结构：type / path / headers / max_early_data / early_data_header_name
+            # 默认早期数据在路径中发送，为兼容 Xray-core 固定使用 Sec-WebSocket-Protocol
+            return {
                 'type': 'ws',
                 'path': path,
-                'headers': ws_opts.get('headers', {}),
+                'headers': ws_opts.get('headers', {}) or {},
+                'max_early_data': max_early_data,
+                'early_data_header_name': EARLY_DATA_HEADER_NAME,
             }
-            
-            if max_early_data > 0:
-                transport['max_early_data'] = max_early_data
-                transport['early_data_header_name'] = 'Sec-WebSocket-Protocol'
-            
-            return transport
-        
+
         elif net == 'grpc':
-            grpc_opts = proxy.get('grpc-opts', {})
+            grpc_opts = proxy.get('grpc-opts') or {}
             return {
                 'type': 'grpc',
                 'service_name': grpc_opts.get('grpc-service-name', ''),
             }
-        
-        elif net == 'h2':
-            h2_opts = proxy.get('h2-opts', {})
+
+        elif net in ('h2', 'http'):
+            http_opts = proxy.get('h2-opts') or proxy.get('http-opts') or {}
+            host = http_opts.get('host', [])
+            if isinstance(host, str):
+                host = [host] if host else []
             return {
                 'type': 'http',
-                'host': h2_opts.get('host', []),
-                'path': h2_opts.get('path', '/'),
+                'host': host,
+                'path': http_opts.get('path', '/') or '/',
             }
-        
+
         elif net == 'httpupgrade':
-            http_opts = proxy.get('http-opts', {}) or proxy.get('ws-opts', {})
-            return {
+            opts = (proxy.get('httpupgrade-opts')
+                    or proxy.get('ws-opts')
+                    or proxy.get('http-opts')
+                    or {})
+            headers = dict(opts.get('headers', {}) or {})
+            host = opts.get('host') or headers.pop('Host', '')
+            transport = {
                 'type': 'httpupgrade',
-                'path': http_opts.get('path', '/'),
-                'host': http_opts.get('headers', {}).get('Host', ''),
+                'host': host,
+                'path': opts.get('path', '/') or '/',
             }
-        
+            if headers:
+                transport['headers'] = headers
+            return transport
+
+        elif net == 'quic':
+            return {'type': 'quic'}
+
         return None
     
+    def _normalize_transport(self, transport) -> Optional[Dict]:
+        """规范化来自 sing-box JSON 订阅的 V2Ray transport
+
+        按官方结构补齐字段，尤其是 ws 的早期数据头（兼容 Xray-core）。
+        参考：https://sing-box.sagernet.org/zh/configuration/shared/v2ray-transport/
+        """
+        if not isinstance(transport, dict):
+            return transport
+
+        ttype = (transport.get('type') or '').lower()
+
+        if ttype == 'ws':
+            path = transport.get('path', '/') or '/'
+            path, parsed_early_data = self._extract_early_data(path)
+
+            max_early_data = transport.get('max_early_data')
+            if max_early_data is None:
+                max_early_data = parsed_early_data
+
+            return {
+                'type': 'ws',
+                'path': path,
+                'headers': transport.get('headers', {}) or {},
+                'max_early_data': max_early_data,
+                'early_data_header_name': (
+                    transport.get('early_data_header_name') or EARLY_DATA_HEADER_NAME
+                ),
+            }
+
+        return transport
+
     def _parse_bandwidth(self, bw: str) -> int:
         """解析带宽值 (如 "100 Mbps" -> 100)"""
         if isinstance(bw, (int, float)):
