@@ -104,6 +104,7 @@ docker logs -f singbox-client
 - ✅ 移除 `routing_mark` 字段（Windows/部分平台不支持）
 - ✅ 移除 `route.default_mark` 字段
 - ✅ 移除 `tproxy` inbound（Windows 不支持）
+- ✅ `.iflytek.com` 域名解析：内网 DNS(10.0.9.60) 优先，公网环境自动回落 `dns-direct`（手机等移动端可正常访问）
 
 **适用场景**：
 - Windows 平台：解决 routing_mark, http_client, tproxy, TUN 代理等兼容性问题

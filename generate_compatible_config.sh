@@ -278,9 +278,27 @@ jq '
               "domain_suffix": [".local", ".lan", ".internal", ".corp", ".home"],
               "server": "dns-local"
             },
+            # .iflytek.com: 内网 DNS(10.0.9.60) 优先。
+            # 先 evaluate 查询内网 DNS(不终止匹配)；正常应答则 respond 直接采用(内网行为不变)；
+            # 内网 DNS 不可达(公网/移动网络)时超时(1s)后回落到 dns-direct，保证手机等移动端可用。
             {
               "domain_suffix": [".iflytek.com"],
-              "server": "dns-intranet"
+              "action": "evaluate",
+              "server": "dns-intranet",
+              "tag": "iflytek-intranet",
+              "timeout": "1s"
+            },
+            {
+              "domain_suffix": [".iflytek.com"],
+              "match_response": "iflytek-intranet",
+              "response_rcode": "NOERROR",
+              "ip_accept_any": true,
+              "action": "respond"
+            },
+            {
+              "domain_suffix": [".iflytek.com"],
+              "action": "route",
+              "server": "dns-direct"
             },
             {
               "clash_mode": "Direct",
@@ -378,6 +396,8 @@ echo "  • DNS 劫持: 53 端口流量强制走 sing-box DNS 模块"
 echo "  • 规则顺序: 国内域名→直连 DNS，国外域名→Fake IP"
 echo "  • Bootstrap: 远程 DoH 服务器域名用 dns-direct 引导，避免回环"
 echo "  • 乐观缓存: 过期缓存先返回旧值，后台异步刷新"
+echo "  • iflytek 域名: 优先内网 DNS(10.0.9.60)，内网 DNS 正常应答即采用；"
+echo "    内网 DNS 不可达(公网/移动网络)时自动回落 dns-direct，手机等移动端可正常访问"
 echo ""
 echo "适用平台："
 echo "  • Windows (解决 routing_mark, http_client, tproxy, TUN 代理问题)"
